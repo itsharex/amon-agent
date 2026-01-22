@@ -34,9 +34,9 @@ export type {
   WorkspaceSkills,
   RecommendedSkill,
   SkillInstallTarget,
-  QueryOptions,
+  MessageOptions,
   SettingsSetResult,
-  QueryCompleteData,
+  MessageCompleteData,
 } from '../../shared/types';
 
 // 导出常量
@@ -52,23 +52,23 @@ import type {
   SkillsLoadResult,
   RecommendedSkill,
   SkillInstallTarget,
-  QueryOptions,
+  MessageOptions,
   SettingsSetResult,
-  QueryCompleteData,
+  MessageCompleteData,
 } from '../../shared/types';
 
 export interface ElectronAPI {
   agent: {
-    query: (prompt: string, sessionId: string, options?: QueryOptions) => Promise<{ success: boolean; error?: string }>;
+    sendMessage: (prompt: string, sessionId: string, options?: MessageOptions) => Promise<{ success: boolean; error?: string }>;
     interrupt: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
     onMessagesUpdated: (callback: (data: { sessionId: string; messages: Message[] }) => void) => void;
     offMessagesUpdated: (callback: (data: { sessionId: string; messages: Message[] }) => void) => void;
-    onQueryState: (callback: (data: { sessionId: string; isLoading: boolean }) => void) => void;
-    offQueryState: (callback: (data: { sessionId: string; isLoading: boolean }) => void) => void;
-    onQueryComplete: (callback: (data: QueryCompleteData) => void) => void;
-    offQueryComplete: (callback: (data: QueryCompleteData) => void) => void;
-    onQueryError: (callback: (data: { sessionId: string; error: string }) => void) => void;
-    offQueryError: (callback: (data: { sessionId: string; error: string }) => void) => void;
+    onMessageState: (callback: (data: { sessionId: string; isLoading: boolean }) => void) => void;
+    offMessageState: (callback: (data: { sessionId: string; isLoading: boolean }) => void) => void;
+    onMessageComplete: (callback: (data: MessageCompleteData) => void) => void;
+    offMessageComplete: (callback: (data: MessageCompleteData) => void) => void;
+    onMessageError: (callback: (data: { sessionId: string; error: string }) => void) => void;
+    offMessageError: (callback: (data: { sessionId: string; error: string }) => void) => void;
   };
   session: {
     list: () => Promise<Session[]>;

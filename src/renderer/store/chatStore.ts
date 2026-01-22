@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Message, QueryOptions, PermissionMode } from '../types';
+import { Message, MessageOptions, PermissionMode } from '../types';
 
 interface ChatState {
   // 按会话缓存消息（来自主进程推送）
@@ -27,8 +27,8 @@ interface ChatState {
   clearSessionCache: (sessionId: string) => void;
 
   // 发送到主进程
-  sendMessage: (content: string, sessionId: string, options?: QueryOptions) => Promise<void>;
-  interruptQuery: (sessionId: string) => Promise<void>;
+  sendMessage: (content: string, sessionId: string, options?: MessageOptions) => Promise<void>;
+  interruptMessage: (sessionId: string) => Promise<void>;
   loadMessages: (sessionId: string) => Promise<void>;
 }
 
@@ -113,11 +113,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       // 如果有临时权限模式，合并到 options 中
       const sessionMode = get().sessionPermissionMode[sessionId];
-      const mergedOptions: QueryOptions | undefined = sessionMode || options
+      const mergedOptions: MessageOptions | undefined = sessionMode || options
         ? { ...options, permissionMode: options?.permissionMode ?? sessionMode }
         : undefined;
 
-      await window.electronAPI.agent.query(content, sessionId, mergedOptions);
+      await window.electronAPI.agent.sendMessage(content, sessionId, mergedOptions);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       set((state) => ({
@@ -126,11 +126,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  interruptQuery: async (sessionId) => {
+  interruptMessage: async (sessionId: string) => {
     try {
       await window.electronAPI.agent.interrupt(sessionId);
     } catch (error) {
-      console.error('Failed to interrupt query:', error);
+      console.error('Failed to interrupt message:', error);
     }
   },
 
@@ -153,18 +153,18 @@ if (typeof window !== 'undefined' && window.electronAPI) {
     useChatStore.getState().setMessages(sessionId, messages);
   });
 
-  // 监听查询状态变化
-  window.electronAPI.agent.onQueryState(({ sessionId, isLoading }) => {
+  // 监听消息状态变化
+  window.electronAPI.agent.onMessageState(({ sessionId, isLoading }) => {
     useChatStore.getState().setLoadingState(sessionId, isLoading);
   });
 
-  // 监听查询错误
-  window.electronAPI.agent.onQueryError(({ sessionId, error }) => {
+  // 监听消息错误
+  window.electronAPI.agent.onMessageError(({ sessionId, error }) => {
     useChatStore.getState().setSessionError(sessionId, error);
   });
 
-  // 监听查询完成（可用于更新 UI 状态）
-  window.electronAPI.agent.onQueryComplete(({ sessionId }) => {
+  // 监听消息完成（可用于更新 UI 状态）
+  window.electronAPI.agent.onMessageComplete(({ sessionId }) => {
     useChatStore.getState().setLoadingState(sessionId, false);
   });
 }

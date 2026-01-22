@@ -8,7 +8,7 @@ import { createLogger } from './logger';
 
 const log = createLogger('SessionStore');
 
-interface QueryState {
+interface MessageState {
   sessionId: string;
   messageId: string;
   isStreaming: boolean;
@@ -20,8 +20,8 @@ class SessionStore extends EventEmitter {
 
   // 内存中的会话数据
   private sessions: Map<string, Session> = new Map();
-  // 当前活跃的查询
-  private activeQueries: Map<string, QueryState> = new Map();
+  // 当前活跃的消息处理
+  private activeMessages: Map<string, MessageState> = new Map();
   // 脏数据标记（需要保存的会话）
   private dirtySessionIds: Set<string> = new Set();
   // 保存定时器
@@ -96,7 +96,7 @@ class SessionStore extends EventEmitter {
     log.info('Session deleted', undefined, sessionId);
     this.sessions.delete(sessionId);
     this.dirtySessionIds.delete(sessionId);
-    this.activeQueries.delete(sessionId);
+    this.activeMessages.delete(sessionId);
 
     const result = await persistence.deleteSession(sessionId);
     this.emit('session:deleted', sessionId);
@@ -211,13 +211,13 @@ class SessionStore extends EventEmitter {
    * 用于在消息流中插入权限结果、用户问题回答等
    */
   addContentBlockToActiveMessage(sessionId: string, block: MessageContentBlock): void {
-    const queryState = this.activeQueries.get(sessionId);
-    if (!queryState) return;
+    const messageState = this.activeMessages.get(sessionId);
+    if (!messageState) return;
 
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
-    const message = session.messages.find(m => m.id === queryState.messageId);
+    const message = session.messages.find(m => m.id === messageState.messageId);
     if (!message) return;
 
     const blocks = message.contentBlocks || [];
@@ -228,30 +228,30 @@ class SessionStore extends EventEmitter {
     this.emit('messages:updated', sessionId, session.messages);
   }
 
-  // ============ 查询状态管理 ============
+  // ============ 消息状态管理 ============
 
-  setQueryState(sessionId: string, state: QueryState): void {
-    this.activeQueries.set(sessionId, state);
-    this.emit('query:state', sessionId, { isLoading: state.isStreaming });
+  setMessageState(sessionId: string, state: MessageState): void {
+    this.activeMessages.set(sessionId, state);
+    this.emit('message:state', sessionId, { isLoading: state.isStreaming });
   }
 
-  getQueryState(sessionId: string): QueryState | undefined {
-    return this.activeQueries.get(sessionId);
+  getMessageState(sessionId: string): MessageState | undefined {
+    return this.activeMessages.get(sessionId);
   }
 
-  clearQueryState(sessionId: string): void {
-    this.activeQueries.delete(sessionId);
-    this.emit('query:state', sessionId, { isLoading: false });
+  clearMessageState(sessionId: string): void {
+    this.activeMessages.delete(sessionId);
+    this.emit('message:state', sessionId, { isLoading: false });
   }
 
   isSessionLoading(sessionId: string): boolean {
-    return this.activeQueries.get(sessionId)?.isStreaming || false;
+    return this.activeMessages.get(sessionId)?.isStreaming || false;
   }
 
   // 获取所有会话的加载状态
   getAllLoadingStates(): Record<string, boolean> {
     const states: Record<string, boolean> = {};
-    this.activeQueries.forEach((state, sessionId) => {
+    this.activeMessages.forEach((state, sessionId) => {
       states[sessionId] = state.isStreaming;
     });
     return states;

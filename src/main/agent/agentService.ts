@@ -2,7 +2,7 @@ import { query, type Options } from '@anthropic-ai/claude-agent-sdk';
 import { execSync } from 'child_process';
 import { v4 as uuidv4 } from 'uuid';
 import { homedir } from 'os';
-import { SDKMessage, Message, AskUserQuestionInput, QueryParams, PermissionResult, QueryOptions } from '../../shared/types';
+import { SDKMessage, Message, AskUserQuestionInput, MessageParams, PermissionResult, MessageOptions } from '../../shared/types';
 import { Settings } from '../../shared/schemas';
 import { DEFAULT_MAX_THINKING_TOKENS, COMMAND_TIMEOUT_MS } from '../../shared/constants';
 import { getSettings } from '../store/configStore';
@@ -17,15 +17,15 @@ const log = createLogger('AgentService');
 
 // ==================== 类型定义 ====================
 
-interface QueryContext extends MessageContext {
+interface SendMessageContext extends MessageContext {
   abortController: AbortController;
   workspace: string;
   settings: Settings;
 }
 
-// ==================== 活跃查询管理 ====================
+// ==================== 活跃消息管理 ====================
 
-const activeQueries = new Map<string, AsyncGenerator<unknown, void, unknown>>();
+const activeMessages = new Map<string, AsyncGenerator<unknown, void, unknown>>();
 
 // ==================== 路径解析 ====================
 
@@ -85,12 +85,12 @@ function buildQueryOptions(
   sdkSessionId: string | undefined,
   abortController: AbortController,
   workspace?: string,
-  queryOptions?: QueryOptions
+  messageOptions?: MessageOptions
 ): Options {
   const agent = settings.agent;
 
   // 临时权限模式优先于全局设置
-  const permissionMode = queryOptions?.permissionMode ?? agent.permissionMode ?? 'default';
+  const permissionMode = messageOptions?.permissionMode ?? agent.permissionMode ?? 'default';
 
   // 展开工作空间路径中的 ~ 符号
   const expandedWorkspace = expandTildePath(workspace || DEFAULT_WORKSPACE);
@@ -196,10 +196,10 @@ function initializeMessages(sessionId: string, prompt: string): string {
 }
 
 /**
- * 设置查询状态
+ * 设置消息状态
  */
-function setupQueryState(ctx: QueryContext): void {
-  sessionStore.setQueryState(ctx.sessionId, {
+function setupMessageState(ctx: SendMessageContext): void {
+  sessionStore.setMessageState(ctx.sessionId, {
     sessionId: ctx.sessionId,
     messageId: ctx.messageId,
     isStreaming: true,
@@ -214,7 +214,7 @@ function setupQueryState(ctx: QueryContext): void {
  */
 async function processStream(
   queryInstance: AsyncGenerator<unknown, void, unknown>,
-  ctx: QueryContext
+  ctx: SendMessageContext
 ): Promise<void> {
   let sdkSessionIdSent = false;
 
@@ -241,41 +241,41 @@ async function processStream(
 
     // 处理完成结果
     if (result.type === 'complete' && result.data) {
-      await handleQueryComplete(ctx.sessionId, result.data);
+      await handleMessageComplete(ctx.sessionId, result.data);
     }
   }
 }
 
 /**
- * 处理查询完成
+ * 处理消息完成
  */
-async function handleQueryComplete(
+async function handleMessageComplete(
   sessionId: string,
   data: ResultData
 ): Promise<void> {
-  log.info('Query complete', { success: data.success, cost: data.cost, duration: data.duration }, sessionId);
+  log.info('Message complete', { success: data.success, cost: data.cost, duration: data.duration }, sessionId);
 
   // 立即保存
   await sessionStore.saveNow(sessionId);
 
   // 发送完成事件
-  sessionStore.emit('query:complete', sessionId, data);
+  sessionStore.emit('message:complete', sessionId, data);
 }
 
 // ==================== 主入口 ====================
 
 /**
- * 执行 Agent 查询
+ * 发送消息到 Agent
  */
-export async function executeQuery(params: QueryParams): Promise<void> {
+export async function sendMessage(params: MessageParams): Promise<void> {
   const { prompt, sessionId, sdkSessionId, options } = params;
 
-  log.info('Query started', { promptLength: prompt.length, sdkSessionId: !!sdkSessionId, options }, sessionId);
+  log.info('Message started', { promptLength: prompt.length, sdkSessionId: !!sdkSessionId, options }, sessionId);
 
-  // 中断已有查询
-  if (activeQueries.has(sessionId)) {
-    log.info('Interrupting existing query', undefined, sessionId);
-    await interruptQuery(sessionId);
+  // 中断已有消息处理
+  if (activeMessages.has(sessionId)) {
+    log.info('Interrupting existing message', undefined, sessionId);
+    await interruptMessage(sessionId);
   }
 
   // 加载配置
@@ -288,10 +288,10 @@ export async function executeQuery(params: QueryParams): Promise<void> {
 
   // 初始化消息
   const messageId = initializeMessages(sessionId, prompt);
-  const ctx: QueryContext = { sessionId, messageId, abortController, workspace, settings };
+  const ctx: SendMessageContext = { sessionId, messageId, abortController, workspace, settings };
 
-  // 设置查询状态
-  setupQueryState(ctx);
+  // 设置消息状态
+  setupMessageState(ctx);
 
   try {
     // 构建查询选项（传入临时 options）
@@ -342,48 +342,48 @@ export async function executeQuery(params: QueryParams): Promise<void> {
       }
     }
 
-    // 创建并注册查询实例
+    // 创建并注册消息实例
     const queryInstance = query({ prompt, options: queryOptions });
-    activeQueries.set(sessionId, queryInstance);
+    activeMessages.set(sessionId, queryInstance);
 
-    log.info('Query instance created, processing stream', undefined, sessionId);
+    log.info('Message instance created, processing stream', undefined, sessionId);
 
     // 处理流式响应
     await processStream(queryInstance, ctx);
 
-    log.info('Query completed successfully', undefined, sessionId);
+    log.info('Message completed successfully', undefined, sessionId);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    sessionStore.emit('query:error', sessionId, errorMessage);
-    log.error('Query failed', errorMessage, sessionId);
+    sessionStore.emit('message:error', sessionId, errorMessage);
+    log.error('Message failed', errorMessage, sessionId);
     throw error;
   } finally {
-    activeQueries.delete(sessionId);
-    sessionStore.clearQueryState(sessionId);
-    log.debug('Query state cleared', undefined, sessionId);
+    activeMessages.delete(sessionId);
+    sessionStore.clearMessageState(sessionId);
+    log.debug('Message state cleared', undefined, sessionId);
   }
 }
 
-// ==================== 查询控制 ====================
+// ==================== 消息控制 ====================
 
 /**
- * 中断指定会话的查询
+ * 中断指定会话的消息处理
  */
-export async function interruptQuery(sessionId: string): Promise<void> {
+export async function interruptMessage(sessionId: string): Promise<void> {
   log.info('Interrupt requested', undefined, sessionId);
-  const queryState = sessionStore.getQueryState(sessionId);
+  const messageState = sessionStore.getMessageState(sessionId);
 
   // 取消待处理的权限请求和问题请求
   permissionManager.cancelSessionRequests(sessionId);
   permissionManager.cancelSessionQuestions(sessionId);
 
   // 中止控制器
-  if (queryState?.abortController) {
-    queryState.abortController.abort();
+  if (messageState?.abortController) {
+    messageState.abortController.abort();
   }
 
-  // 尝试调用查询实例的 interrupt 方法
-  const queryInstance = activeQueries.get(sessionId);
+  // 尝试调用消息实例的 interrupt 方法
+  const queryInstance = activeMessages.get(sessionId);
   if (queryInstance) {
     try {
       const queryObj = queryInstance as unknown as { interrupt?: () => Promise<void> };
@@ -393,25 +393,25 @@ export async function interruptQuery(sessionId: string): Promise<void> {
     } catch {
       // 忽略中断错误
     }
-    activeQueries.delete(sessionId);
+    activeMessages.delete(sessionId);
   }
 
   // 添加中断标记到消息
-  if (queryState?.messageId) {
-    sessionStore.appendToMessage(sessionId, queryState.messageId, 'text', '\n\n[已中断]');
-    sessionStore.updateMessage(sessionId, queryState.messageId, {
+  if (messageState?.messageId) {
+    sessionStore.appendToMessage(sessionId, messageState.messageId, 'text', '\n\n[已中断]');
+    sessionStore.updateMessage(sessionId, messageState.messageId, {
       isStreaming: false,
     });
     await sessionStore.saveNow(sessionId);
   }
 
-  sessionStore.clearQueryState(sessionId);
-  log.info('Query interrupted', undefined, sessionId);
+  sessionStore.clearMessageState(sessionId);
+  log.info('Message interrupted', undefined, sessionId);
 }
 
 /**
- * 检查指定会话是否有活跃的查询
+ * 检查指定会话是否有活跃的消息处理
  */
-export function hasActiveQuery(sessionId: string): boolean {
-  return activeQueries.has(sessionId);
+export function hasActiveMessage(sessionId: string): boolean {
+  return activeMessages.has(sessionId);
 }

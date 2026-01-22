@@ -285,9 +285,9 @@ export interface SettingsSetResult {
 }
 
 /**
- * 查询完成数据
+ * 消息完成数据
  */
-export interface QueryCompleteData {
+export interface MessageCompleteData {
   sessionId: string;
   success: boolean;
   result?: string;
@@ -297,22 +297,22 @@ export interface QueryCompleteData {
   errors?: string[];
 }
 
-// ==================== 查询选项类型 ====================
+// ==================== 消息选项类型 ====================
 
 /**
- * 临时查询选项（覆盖全局设置）
+ * 临时消息选项（覆盖全局设置）
  */
-export interface QueryOptions {
-  /** 临时权限模式（覆盖全局设置，仅对当前查询生效） */
+export interface MessageOptions {
+  /** 临时权限模式（覆盖全局设置，仅对当前消息生效） */
   permissionMode?: PermissionMode;
 }
 
 /**
- * Agent 查询参数
+ * Agent 消息参数
  */
-export interface QueryParams {
+export interface MessageParams {
   prompt: string;
   sessionId: string;
   sdkSessionId?: string;
-  options?: QueryOptions;
+  options?: MessageOptions;
 }

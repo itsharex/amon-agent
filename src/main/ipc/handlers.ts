@@ -1,8 +1,8 @@
 import { ipcMain, BrowserWindow, shell, dialog } from 'electron';
 import os from 'os';
 import { IPC_CHANNELS } from '../../shared/ipc';
-import { Settings, Message, PermissionResult, ToolPermissionRequest, AskUserQuestionRequest, Session, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, QueryOptions, SettingsSetResult } from '../../shared/types';
-import { executeQuery, interruptQuery } from '../agent/agentService';
+import { Settings, Message, PermissionResult, ToolPermissionRequest, AskUserQuestionRequest, Session, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult } from '../../shared/types';
+import { sendMessage, interruptMessage } from '../agent/agentService';
 import { sessionStore } from '../store/sessionStore';
 import { permissionManager } from '../agent/permissionManager';
 import * as configStore from '../store/configStore';
@@ -18,15 +18,15 @@ const log = createLogger('IpcHandlers');
 export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   // ========== Agent 相关 ==========
 
-  // 执行查询
+  // 发送消息
   ipcMain.handle(
-    IPC_CHANNELS.AGENT_QUERY,
-    async (_event, params: { prompt: string; sessionId: string; options?: QueryOptions }) => {
+    IPC_CHANNELS.AGENT_SEND_MESSAGE,
+    async (_event, params: { prompt: string; sessionId: string; options?: MessageOptions }) => {
       try {
-        log.info('IPC: Agent query received', { promptLength: params.prompt.length }, params.sessionId);
+        log.info('IPC: Agent sendMessage received', { promptLength: params.prompt.length }, params.sessionId);
         // 获取 SDK session ID
         const sdkSessionId = sessionStore.getSdkSessionId(params.sessionId);
-        await executeQuery({
+        await sendMessage({
           prompt: params.prompt,
           sessionId: params.sessionId,
           sdkSessionId,
@@ -34,18 +34,18 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
         });
         return { success: true };
       } catch (error) {
-        log.error('IPC: Agent query failed', error instanceof Error ? { message: error.message } : error, params.sessionId);
+        log.error('IPC: Agent sendMessage failed', error instanceof Error ? { message: error.message } : error, params.sessionId);
         const message = error instanceof Error ? error.message : 'Unknown error';
         return { success: false, error: message };
       }
     }
   );
 
-  // 中断查询
+  // 中断消息处理
   ipcMain.handle(IPC_CHANNELS.AGENT_INTERRUPT, async (_event, sessionId: string) => {
     try {
       log.info('IPC: Agent interrupt requested', undefined, sessionId);
-      await interruptQuery(sessionId);
+      await interruptMessage(sessionId);
       return { success: true };
     } catch (error) {
       log.error('IPC: Agent interrupt failed', error instanceof Error ? { message: error.message } : error, sessionId);
@@ -326,24 +326,24 @@ function setupSessionStoreListeners(mainWindow: BrowserWindow): void {
     }
   });
 
-  // 查询状态变化
-  sessionStore.on('query:state', (sessionId: string, state: { isLoading: boolean }) => {
+  // 消息状态变化
+  sessionStore.on('message:state', (sessionId: string, state: { isLoading: boolean }) => {
     if (!mainWindow.isDestroyed()) {
-      mainWindow.webContents.send(IPC_CHANNELS.PUSH_QUERY_STATE, { sessionId, isLoading: state.isLoading });
+      mainWindow.webContents.send(IPC_CHANNELS.PUSH_MESSAGE_STATE, { sessionId, isLoading: state.isLoading });
     }
   });
 
-  // 查询完成
-  sessionStore.on('query:complete', (sessionId: string, data: unknown) => {
+  // 消息完成
+  sessionStore.on('message:complete', (sessionId: string, data: unknown) => {
     if (!mainWindow.isDestroyed()) {
-      mainWindow.webContents.send(IPC_CHANNELS.PUSH_QUERY_COMPLETE, { sessionId, ...data as object });
+      mainWindow.webContents.send(IPC_CHANNELS.PUSH_MESSAGE_COMPLETE, { sessionId, ...data as object });
     }
   });
 
-  // 查询错误
-  sessionStore.on('query:error', (sessionId: string, error: string) => {
+  // 消息错误
+  sessionStore.on('message:error', (sessionId: string, error: string) => {
     if (!mainWindow.isDestroyed()) {
-      mainWindow.webContents.send(IPC_CHANNELS.PUSH_QUERY_ERROR, { sessionId, error });
+      mainWindow.webContents.send(IPC_CHANNELS.PUSH_MESSAGE_ERROR, { sessionId, error });
     }
   });
 

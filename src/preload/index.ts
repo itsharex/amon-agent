@@ -1,12 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../shared/ipc';
-import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, QueryOptions, SettingsSetResult, QueryCompleteData } from '../shared/types';
+import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, MessageCompleteData } from '../shared/types';
 
 // 推送事件回调类型
 type MessagesUpdatedCallback = (data: { sessionId: string; messages: Message[] }) => void;
-type QueryStateCallback = (data: { sessionId: string; isLoading: boolean }) => void;
-type QueryCompleteCallback = (data: QueryCompleteData) => void;
-type QueryErrorCallback = (data: { sessionId: string; error: string }) => void;
+type MessageStateCallback = (data: { sessionId: string; isLoading: boolean }) => void;
+type MessageCompleteCallback = (data: MessageCompleteData) => void;
+type MessageErrorCallback = (data: { sessionId: string; error: string }) => void;
 type SessionCreatedCallback = (session: Session) => void;
 type SessionDeletedCallback = (data: { sessionId: string }) => void;
 type SessionUpdatedCallback = (session: Session) => void;
@@ -17,9 +17,9 @@ type AskUserQuestionRequestCallback = (request: AskUserQuestionRequest) => void;
 
 // 回调列表
 const messagesUpdatedCallbacks: Set<MessagesUpdatedCallback> = new Set();
-const queryStateCallbacks: Set<QueryStateCallback> = new Set();
-const queryCompleteCallbacks: Set<QueryCompleteCallback> = new Set();
-const queryErrorCallbacks: Set<QueryErrorCallback> = new Set();
+const messageStateCallbacks: Set<MessageStateCallback> = new Set();
+const messageCompleteCallbacks: Set<MessageCompleteCallback> = new Set();
+const messageErrorCallbacks: Set<MessageErrorCallback> = new Set();
 const sessionCreatedCallbacks: Set<SessionCreatedCallback> = new Set();
 const sessionDeletedCallbacks: Set<SessionDeletedCallback> = new Set();
 const sessionUpdatedCallbacks: Set<SessionUpdatedCallback> = new Set();
@@ -35,16 +35,16 @@ ipcRenderer.on(IPC_CHANNELS.PUSH_MESSAGES_UPDATED, (_event, data) => {
   messagesUpdatedCallbacks.forEach(cb => cb(data));
 });
 
-ipcRenderer.on(IPC_CHANNELS.PUSH_QUERY_STATE, (_event, data) => {
-  queryStateCallbacks.forEach(cb => cb(data));
+ipcRenderer.on(IPC_CHANNELS.PUSH_MESSAGE_STATE, (_event, data) => {
+  messageStateCallbacks.forEach(cb => cb(data));
 });
 
-ipcRenderer.on(IPC_CHANNELS.PUSH_QUERY_COMPLETE, (_event, data) => {
-  queryCompleteCallbacks.forEach(cb => cb(data));
+ipcRenderer.on(IPC_CHANNELS.PUSH_MESSAGE_COMPLETE, (_event, data) => {
+  messageCompleteCallbacks.forEach(cb => cb(data));
 });
 
-ipcRenderer.on(IPC_CHANNELS.PUSH_QUERY_ERROR, (_event, data) => {
-  queryErrorCallbacks.forEach(cb => cb(data));
+ipcRenderer.on(IPC_CHANNELS.PUSH_MESSAGE_ERROR, (_event, data) => {
+  messageErrorCallbacks.forEach(cb => cb(data));
 });
 
 ipcRenderer.on(IPC_CHANNELS.PUSH_SESSION_CREATED, (_event, session) => {
@@ -89,18 +89,18 @@ const electronAPI = {
   // ========== Agent API ==========
   agent: {
     /**
-     * 发送查询请求
+     * 发送消息
      */
-    query: (
+    sendMessage: (
       prompt: string,
       sessionId: string,
-      options?: QueryOptions
+      options?: MessageOptions
     ): Promise<{ success: boolean; error?: string }> => {
-      return ipcRenderer.invoke(IPC_CHANNELS.AGENT_QUERY, { prompt, sessionId, options });
+      return ipcRenderer.invoke(IPC_CHANNELS.AGENT_SEND_MESSAGE, { prompt, sessionId, options });
     },
 
     /**
-     * 中断指定会话的查询
+     * 中断指定会话的消息处理
      */
     interrupt: (sessionId: string): Promise<{ success: boolean; error?: string }> => {
       return ipcRenderer.invoke(IPC_CHANNELS.AGENT_INTERRUPT, sessionId);
@@ -121,45 +121,45 @@ const electronAPI = {
     },
 
     /**
-     * 监听查询状态变化
+     * 监听消息状态变化
      */
-    onQueryState: (callback: QueryStateCallback): void => {
-      queryStateCallbacks.add(callback);
+    onMessageState: (callback: MessageStateCallback): void => {
+      messageStateCallbacks.add(callback);
     },
 
     /**
-     * 取消监听查询状态变化
+     * 取消监听消息状态变化
      */
-    offQueryState: (callback: QueryStateCallback): void => {
-      queryStateCallbacks.delete(callback);
+    offMessageState: (callback: MessageStateCallback): void => {
+      messageStateCallbacks.delete(callback);
     },
 
     /**
-     * 监听查询完成
+     * 监听消息完成
      */
-    onQueryComplete: (callback: QueryCompleteCallback): void => {
-      queryCompleteCallbacks.add(callback);
+    onMessageComplete: (callback: MessageCompleteCallback): void => {
+      messageCompleteCallbacks.add(callback);
     },
 
     /**
-     * 取消监听查询完成
+     * 取消监听消息完成
      */
-    offQueryComplete: (callback: QueryCompleteCallback): void => {
-      queryCompleteCallbacks.delete(callback);
+    offMessageComplete: (callback: MessageCompleteCallback): void => {
+      messageCompleteCallbacks.delete(callback);
     },
 
     /**
-     * 监听查询错误
+     * 监听消息错误
      */
-    onQueryError: (callback: QueryErrorCallback): void => {
-      queryErrorCallbacks.add(callback);
+    onMessageError: (callback: MessageErrorCallback): void => {
+      messageErrorCallbacks.add(callback);
     },
 
     /**
-     * 取消监听查询错误
+     * 取消监听消息错误
      */
-    offQueryError: (callback: QueryErrorCallback): void => {
-      queryErrorCallbacks.delete(callback);
+    offMessageError: (callback: MessageErrorCallback): void => {
+      messageErrorCallbacks.delete(callback);
     },
   },
 

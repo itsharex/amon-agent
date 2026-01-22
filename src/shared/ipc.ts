@@ -1,7 +1,7 @@
 // IPC 通道名称常量
 export const IPC_CHANNELS = {
   // Agent 相关
-  AGENT_QUERY: 'agent:query',
+  AGENT_SEND_MESSAGE: 'agent:sendMessage',
   AGENT_INTERRUPT: 'agent:interrupt',
 
   // 权限相关
@@ -47,9 +47,9 @@ export const IPC_CHANNELS = {
 
   // 主进程 -> 渲染进程 的推送事件
   PUSH_MESSAGES_UPDATED: 'push:messagesUpdated',
-  PUSH_QUERY_STATE: 'push:queryState',
-  PUSH_QUERY_COMPLETE: 'push:queryComplete',
-  PUSH_QUERY_ERROR: 'push:queryError',
+  PUSH_MESSAGE_STATE: 'push:messageState',
+  PUSH_MESSAGE_COMPLETE: 'push:messageComplete',
+  PUSH_MESSAGE_ERROR: 'push:messageError',
   PUSH_SESSION_CREATED: 'push:sessionCreated',
   PUSH_SESSION_DELETED: 'push:sessionDeleted',
   PUSH_SESSION_UPDATED: 'push:sessionUpdated',

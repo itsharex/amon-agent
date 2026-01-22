@@ -6,7 +6,7 @@ import InputToolbar from './InputToolbar';
 const InputArea: React.FC = () => {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { sendMessage, interruptQuery, isSessionLoading } = useChatStore();
+  const { sendMessage, interruptMessage, isSessionLoading } = useChatStore();
   const { currentSessionId } = useSessionStore();
 
   // 当前会话是否正在加载
@@ -41,7 +41,7 @@ const InputArea: React.FC = () => {
 
   const handleInterrupt = () => {
     if (currentSessionId) {
-      interruptQuery(currentSessionId);
+      interruptMessage(currentSessionId);
     }
   };
 
