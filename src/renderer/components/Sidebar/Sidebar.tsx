@@ -17,13 +17,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   return (
     <div
       className={`
-        h-full bg-white dark:bg-gray-800
+        h-full bg-[var(--sidebar-background)]
         flex flex-col overflow-hidden transition-all duration-300 ease-in-out
-        ${collapsed ? 'w-0' : 'w-64'}
+        ${collapsed ? 'w-0' : 'w-56'}
       `}
     >
       {/* 内容容器 - 固定宽度防止内容压缩 */}
-      <div className="w-64 h-full flex flex-col shrink-0">
+      <div className="w-56 h-full flex flex-col shrink-0">
         {/* 头部 - 拖拽区域，为红绿灯按钮留出空间 */}
         <div className="h-12 drag-region flex items-center justify-end gap-1 px-2 pl-20">
           <Button

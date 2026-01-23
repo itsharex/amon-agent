@@ -96,12 +96,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex bg-white dark:bg-gray-800">
+    <div className="h-screen flex bg-[var(--sidebar-background)]">
       {/* 侧边栏 */}
       <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
-
-      {/* 侧边栏和主聊天区域之间的分隔线 */}
-      <div className="w-px bg-gray-200 dark:bg-gray-700" />
 
       {/* 聊天主区域 */}
       <ChatView sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} />

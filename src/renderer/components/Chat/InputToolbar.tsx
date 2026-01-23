@@ -17,7 +17,7 @@ const InputToolbar: React.FC<InputToolbarProps> = ({ isLoading, canSend, onSend,
   if (!currentSessionId) return null;
 
   return (
-    <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 dark:border-gray-600">
+    <div className="flex items-center justify-between px-3 py-2">
       {/* 左侧工具组 */}
       <div className="flex items-center gap-1">
         {/* 附件按钮 (UI 占位) */}

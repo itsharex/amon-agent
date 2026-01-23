@@ -40,11 +40,11 @@ const ProviderSelector: React.FC = () => {
         onClick={() => !isDisabled && setOpen(!open)}
         disabled={isDisabled}
         className={`
-          flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs
+          flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs border
           transition-colors duration-150
           ${isDisabled
-            ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
-            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'
+            ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed border-gray-200 dark:border-gray-700'
+            : 'text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
           }
         `}
         title={claudeCodeMode ? 'Claude Code 模式' : (providers.length === 0 ? '请在设置中配置 Provider' : '切换 Provider')}

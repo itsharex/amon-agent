@@ -95,7 +95,7 @@ const SettingsWindow: React.FC = () => {
 
   if (useSettingsStore.getState().isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white dark:bg-gray-800">
+      <div className="h-screen flex items-center justify-center bg-[var(--main-background)]">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-gray-500 dark:text-gray-400">加载中...</p>
@@ -105,7 +105,7 @@ const SettingsWindow: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex bg-white dark:bg-gray-800">
+    <div className="h-screen flex bg-[var(--main-background)]">
       {/* 可拖拽的标题栏区域 */}
       <div
         className="absolute top-0 left-0 right-0 h-10 z-10"
@@ -113,7 +113,7 @@ const SettingsWindow: React.FC = () => {
       />
 
       {/* 侧边栏 */}
-      <div className="w-48 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex flex-col">
+      <div className="w-48 bg-[var(--sidebar-background)] flex flex-col">
         <div className="h-10" />
         <nav className="flex-1 p-2 space-y-1">
           {tabs.map((tab) => (
@@ -121,10 +121,10 @@ const SettingsWindow: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
                 ${activeTab === tab.id
-                  ? 'bg-primary-500/10 text-primary-500 dark:bg-primary-500/20'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}
+                  ? 'bg-[var(--sidebar-hover)] text-gray-900 dark:text-gray-100'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-[var(--sidebar-hover)]'}
               `}
             >
               {tab.icon}

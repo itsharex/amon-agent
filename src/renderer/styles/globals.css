@@ -10,11 +10,19 @@
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
+  --color-background: hsl(var(--background));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  /* 自定义主题色 */
+  --sidebar-background: #fcfaf8;
+  --sidebar-hover: #f5f3ef;
+  --main-background: #ffffff;
+  --primary-color: #1d8aff;
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --primary: 199 89% 48%;
+  --primary: 211 100% 56%;
   --primary-foreground: 210 40% 98%;
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
@@ -26,18 +34,26 @@
   --destructive-foreground: 210 40% 98%;
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 199 89% 48%;
+  --ring: 211 100% 56%;
   --radius: 0.5rem;
 }
 
 .dark {
   --background: 222.2 84% 4.9%;
   --foreground: 210 40% 98%;
+  --color-background: hsl(var(--background));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  /* 自定义主题色 */
+  --sidebar-background: #0b0a0b;
+  --sidebar-hover: #1a1918;
+  --main-background: #151516;
+  --primary-color: #1d8aff;
   --card: 222.2 84% 4.9%;
   --card-foreground: 210 40% 98%;
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
-  --primary: 199 89% 48%;
+  --primary: 211 100% 56%;
   --primary-foreground: 222.2 47.4% 11.2%;
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
@@ -49,21 +65,21 @@
   --destructive-foreground: 210 40% 98%;
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
-  --ring: 199 89% 48%;
+  --ring: 211 100% 56%;
 }
 
 /* 自定义主题变量 */
 @theme {
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
+  --color-primary-50: #e6f3ff;
+  --color-primary-100: #cce7ff;
+  --color-primary-200: #99cfff;
+  --color-primary-300: #66b7ff;
+  --color-primary-400: #33a0ff;
+  --color-primary-500: #1d8aff;
+  --color-primary-600: #0076e6;
+  --color-primary-700: #0060b8;
+  --color-primary-800: #004a8a;
+  --color-primary-900: #00345c;
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);

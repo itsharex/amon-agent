@@ -65,11 +65,11 @@ const PermissionModeSelector: React.FC<PermissionModeSelectorProps> = ({ session
       <button
         onClick={() => setOpen(!open)}
         className={`
-          flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs
+          flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs border
           transition-colors duration-150
           ${isOverridden
-            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-600/50'
+            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-800'
+            : 'text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
           }
         `}
       >
