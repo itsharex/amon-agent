@@ -334,6 +334,13 @@ const electronAPI = {
     openPath: (path: string): Promise<{ success: boolean }> => {
       return ipcRenderer.invoke(IPC_CHANNELS.SHELL_OPEN_PATH, path);
     },
+
+    /**
+     * 在默认浏览器中打开外部链接
+     */
+    openExternal: (url: string): Promise<{ success: boolean }> => {
+      return ipcRenderer.invoke(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, url);
+    },
   },
 
   // ========== Dialog API ==========
@@ -463,6 +470,16 @@ const electronAPI = {
      */
     uninstall: (skillPath: string): Promise<{ success: boolean; error?: string }> => {
       return ipcRenderer.invoke(IPC_CHANNELS.SKILLS_UNINSTALL, skillPath);
+    },
+  },
+
+  // ========== App API ==========
+  app: {
+    /**
+     * 获取应用版本号
+     */
+    getVersion: (): Promise<{ success: boolean; version: string }> => {
+      return ipcRenderer.invoke(IPC_CHANNELS.APP_GET_VERSION);
     },
   },
 };

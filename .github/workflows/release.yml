@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: macos-latest
+    # 防止 fork 仓库触发
+    if: github.repository_owner == 'liruifengv'
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Create Release Pull Request or Publish to GitHub
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          # 创建 Version PR（更新版本号和 CHANGELOG）
+          version: bun run version
+          # 发布到 GitHub Releases
+          publish: bun run release
+          # PR 标题
+          title: "chore: version packages"
+          # PR 提交信息
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 如果有版本发布，输出信息
+      - name: Output Release Info
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          echo "Published packages:"
+          echo "${{ steps.changesets.outputs.publishedPackages }}"

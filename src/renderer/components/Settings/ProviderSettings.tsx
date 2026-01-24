@@ -109,14 +109,14 @@ const ProviderSettings: React.FC = () => {
   const handleDeleteProvider = async (provider: Provider) => {
     const { confirmed } = await window.electronAPI.dialog.confirm({
       title: '确认删除',
-      message: `确定要删除 Provider "${provider.name}" 吗？`,
+      message: `确定要删除供应商 "${provider.name}" 吗？`,
     });
 
     if (!confirmed) return;
 
     clearSaveError();
     const filtered = providers.filter(p => p.id !== provider.id);
-    // 如果删除的是当前激活的 Provider，清除激活状态或选择第一个
+    // 如果删除的是当前激活的供应商，清除激活状态或选择第一个
     let newActiveId = activeProviderId;
     if (activeProviderId === provider.id) {
       newActiveId = filtered.length > 0 ? filtered[0].id : null;
@@ -234,9 +234,9 @@ const ProviderSettings: React.FC = () => {
       {/* 标题和添加按钮 */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-foreground">Provider 列表</h3>
+          <h3 className="text-sm font-medium text-foreground">供应商列表</h3>
           <p className="text-xs text-muted-foreground mt-1">
-            配置多个 AI 服务提供商，选择一个作为当前使用
+            配置多个 AI 服务供应商，选择一个作为当前使用
           </p>
         </div>
         {!isAdding && (
@@ -259,7 +259,7 @@ const ProviderSettings: React.FC = () => {
       {providers.length === 0 && !isAdding ? (
         <div className="text-center py-8 text-muted-foreground bg-muted rounded-lg">
           <Server className="w-10 h-10 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">暂无 Provider</p>
+          <p className="text-sm">暂无供应商</p>
           <p className="text-xs mt-1">点击上方按钮添加</p>
         </div>
       ) : (
@@ -344,7 +344,7 @@ const ProviderSettings: React.FC = () => {
 
       {/* 说明文字 */}
       <div className="text-xs text-muted-foreground space-y-1">
-        <p>Provider 用于配置 AI 服务的 API 连接信息。</p>
+        <p>供应商用于配置 AI 服务的 API 连接信息。</p>
         <p>点击「启用」按钮可将其设为当前使用。</p>
       </div>
     </div>

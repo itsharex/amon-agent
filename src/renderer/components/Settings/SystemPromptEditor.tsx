@@ -25,7 +25,7 @@ const SystemPromptEditor: React.FC = () => {
     <div>
       <div className="flex items-center justify-between mb-2">
         <label className="text-sm font-medium text-foreground">
-          System Prompt
+          系统提示词
         </label>
         {!isEditing && (
           <button

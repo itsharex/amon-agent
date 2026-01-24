@@ -42,12 +42,12 @@ const SettingsWindow: React.FC = () => {
     },
     {
       id: 'provider',
-      label: 'Provider',
+      label: '供应商',
       icon: <Server className="w-5 h-5" />,
     },
     {
       id: 'agent',
-      label: 'Agent',
+      label: '智能体',
       icon: <MessageCircle className="w-5 h-5" />,
     },
     {
@@ -57,7 +57,7 @@ const SettingsWindow: React.FC = () => {
     },
     {
       id: 'skills',
-      label: 'Skills',
+      label: '技能',
       icon: <Sparkles className="w-5 h-5" />,
     },
     {

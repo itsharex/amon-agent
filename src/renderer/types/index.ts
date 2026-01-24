@@ -101,6 +101,7 @@ export interface ElectronAPI {
   shell: {
     openConfigDir: () => Promise<{ success: boolean }>;
     openPath: (path: string) => Promise<{ success: boolean }>;
+    openExternal: (url: string) => Promise<{ success: boolean }>;
   };
   dialog: {
     selectFolder: () => Promise<{ success: boolean; path: string | null }>;
@@ -129,6 +130,9 @@ export interface ElectronAPI {
     listRecommended: () => Promise<RecommendedSkill[]>;
     install: (skillId: string, target: SkillInstallTarget, workspacePath?: string) => Promise<{ success: boolean; error?: string }>;
     uninstall: (skillPath: string) => Promise<{ success: boolean; error?: string }>;
+  };
+  app: {
+    getVersion: () => Promise<{ success: boolean; version: string }>;
   };
 }
 

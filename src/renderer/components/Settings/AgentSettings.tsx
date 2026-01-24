@@ -24,10 +24,10 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
 
   return (
     <div className="space-y-6">
-      {/* 当前 Provider */}
+      {/* 当前供应商 */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
-          <span>当前 Provider：</span>
+          <span>当前供应商：</span>
           {activeProvider ? (
             <span className="text-primary font-medium">{activeProvider.name}</span>
           ) : (
@@ -71,7 +71,7 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
         </div>
       </div>
 
-      {/* System Prompt */}
+      {/* 系统提示词 */}
       <SystemPromptEditor />
 
       {/* Claude Code 模式 */}

@@ -1,11 +1,10 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
-import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
-import { MakerDeb } from '@electron-forge/maker-deb';
-import { MakerRpm } from '@electron-forge/maker-rpm';
+import { MakerDMG } from '@electron-forge/maker-dmg';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import { PublisherGithub } from '@electron-forge/publisher-github';
 import { cpSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { spawnSync } from 'child_process';
@@ -14,6 +13,11 @@ const config: ForgeConfig = {
   packagerConfig: {
     name: 'Amon',
     executableName: 'Amon',
+    // 应用图标
+    icon: './resources/icons/icon',
+    // macOS 特定配置
+    appBundleId: 'com.liruifengv.amon',
+    appCategoryType: 'public.app-category.productivity',
     asar: {
       unpack: '**/node_modules/@anthropic-ai/**',
     },
@@ -38,10 +42,23 @@ const config: ForgeConfig = {
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
+    // macOS ZIP
     new MakerZIP({}, ['darwin']),
-    new MakerRpm({}),
-    new MakerDeb({}),
+    // macOS DMG
+    new MakerDMG({
+      format: 'ULFO',
+      icon: './resources/icons/icon.icns',
+    }),
+  ],
+  publishers: [
+    new PublisherGithub({
+      repository: {
+        owner: 'liruifengv',
+        name: 'amon-agent',
+      },
+      prerelease: false,
+      draft: true, // 先创建为 Draft，手动检查后再发布
+    }),
   ],
   hooks: {
     prePackage: async () => {

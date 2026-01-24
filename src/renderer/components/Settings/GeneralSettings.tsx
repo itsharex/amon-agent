@@ -5,17 +5,17 @@ import { Sun, Moon, Monitor } from 'lucide-react';
 const THEMES = [
   {
     id: 'light' as const,
-    name: 'Light',
+    name: '浅色',
     icon: <Sun className="w-6 h-6" />,
   },
   {
     id: 'dark' as const,
-    name: 'Dark',
+    name: '深色',
     icon: <Moon className="w-6 h-6" />,
   },
   {
     id: 'system' as const,
-    name: 'System',
+    name: '跟随系统',
     icon: <Monitor className="w-6 h-6" />,
   },
 ];
@@ -36,7 +36,7 @@ const GeneralSettings: React.FC = () => {
       {/* 主题设置 */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-3">
-          Theme
+          主题
         </label>
         <div className="grid grid-cols-3 gap-3">
           {THEMES.map((theme) => (

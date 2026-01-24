@@ -44,6 +44,10 @@ export const IPC_CHANNELS = {
   // Shell 相关
   SHELL_OPEN_CONFIG_DIR: 'shell:open-config-dir',
   SHELL_OPEN_PATH: 'shell:open-path',
+  SHELL_OPEN_EXTERNAL: 'shell:open-external',
+
+  // 应用信息
+  APP_GET_VERSION: 'app:get-version',
 
   // 主进程 -> 渲染进程 的推送事件
   PUSH_MESSAGES_UPDATED: 'push:messagesUpdated',

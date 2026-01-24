@@ -1,5 +1,7 @@
-import { ipcMain, BrowserWindow, shell, dialog } from 'electron';
+import { ipcMain, BrowserWindow, shell, dialog, app } from 'electron';
 import os from 'os';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { IPC_CHANNELS } from '../../shared/ipc';
 import { Settings, Message, PermissionResult, ToolPermissionRequest, AskUserQuestionRequest, Session, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult } from '../../shared/types';
 import { sendMessage, interruptMessage } from '../agent/agentService';
@@ -269,6 +271,31 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
       : path;
     await shell.openPath(expandedPath);
     return { success: true };
+  });
+
+  // 在默认浏览器中打开外部链接
+  ipcMain.handle(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, async (_event, url: string) => {
+    try {
+      await shell.openExternal(url);
+      return { success: true };
+    } catch (error) {
+      log.error('IPC: Failed to open external URL', error instanceof Error ? { message: error.message, url } : { url });
+      return { success: false };
+    }
+  });
+
+  // ========== 应用信息相关 ==========
+
+  // 获取应用版本号
+  ipcMain.handle(IPC_CHANNELS.APP_GET_VERSION, async () => {
+    try {
+      // 优先使用 Electron app.getVersion()
+      const version = app.getVersion();
+      return { success: true, version };
+    } catch (error) {
+      log.error('IPC: Failed to get app version', error instanceof Error ? { message: error.message } : error);
+      return { success: false, version: '0.0.0' };
+    }
   });
 
   // ========== 对话框相关 ==========
