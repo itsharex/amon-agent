@@ -11,6 +11,9 @@ import {
   Settings,
   ListTodo,
   ChevronRight,
+  Check,
+  X,
+  Loader2,
 } from 'lucide-react';
 
 export interface ToolCallBlockProps {
@@ -77,9 +80,18 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
   const icon = TOOL_ICONS[toolCall.name] || <Settings className="w-4 h-4" />;
   const displayName = TOOL_DISPLAY_NAMES[toolCall.name] || toolCall.name;
   const inputSummary = getInputSummary(toolCall.name, toolCall.input);
+  const status = toolCall.status || 'pending';
+
+  // 状态图标和样式
+  const statusIcon = {
+    pending: <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />,
+    running: <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />,
+    completed: <Check className="w-3.5 h-3.5 text-green-500" />,
+    error: <X className="w-3.5 h-3.5 text-red-500" />,
+  }[status];
 
   return (
-    <div className="rounded-lg border border-border bg-muted overflow-hidden">
+    <div className={`rounded-lg border overflow-hidden ${toolCall.isError ? 'border-red-500/30 bg-red-500/5' : 'border-border bg-muted'}`}>
       {/* 头部 - 可点击折叠 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -100,6 +112,9 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
             {inputSummary}
           </span>
         )}
+
+        {/* 状态图标 */}
+        <span className="shrink-0 ml-auto">{statusIcon}</span>
       </button>
 
       {/* 展开的详情 */}
@@ -116,10 +131,26 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
           {/* 输出结果 */}
           {toolCall.output && (
             <div className="px-3 py-2 border-t border-inherit">
-              <div className="text-xs font-medium text-muted-foreground mb-1">Output</div>
-              <pre className="text-xs font-mono bg-black/5 dark:bg-white/10 text-foreground rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-60 overflow-y-auto">
+              <div className={`text-xs font-medium mb-1 ${toolCall.isError ? 'text-red-500' : 'text-muted-foreground'}`}>
+                {toolCall.isError ? 'Error' : 'Output'}
+              </div>
+              <pre className={`text-xs font-mono rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-60 overflow-y-auto ${
+                toolCall.isError
+                  ? 'bg-red-500/10 text-red-700 dark:text-red-400'
+                  : 'bg-black/5 dark:bg-white/10 text-foreground'
+              }`}>
                 {toolCall.output}
               </pre>
+            </div>
+          )}
+
+          {/* 运行中状态提示 */}
+          {(status === 'running' || status === 'pending') && !toolCall.output && (
+            <div className="px-3 py-2 border-t border-inherit">
+              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                {status === 'running' ? 'Executing...' : 'Waiting...'}
+              </div>
             </div>
           )}
         </div>

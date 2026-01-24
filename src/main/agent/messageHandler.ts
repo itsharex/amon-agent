@@ -40,12 +40,23 @@ export interface ResultData {
 export function handleMessage(sdkMessage: SDKMessage, ctx: MessageContext): HandleResult {
   const { sessionId } = ctx;
 
+  // 调试：记录所有消息类型
+  log.debug('SDK message received', {
+    type: sdkMessage.type,
+    hasMessage: !!sdkMessage.message,
+    hasContent: !!sdkMessage.message?.content,
+    contentLength: sdkMessage.message?.content?.length
+  }, sessionId);
+
   switch (sdkMessage.type) {
     case 'assistant':
       log.debug('Received assistant message', undefined, sessionId);
       return handleAssistantMessage(sdkMessage, ctx);
 
     case 'user':
+      log.debug('Received user message', {
+        contentTypes: sdkMessage.message?.content?.map((b: ContentBlock) => b.type)
+      }, sessionId);
       return handleUserMessage(sdkMessage, ctx);
 
     case 'stream_event':
@@ -105,6 +116,7 @@ function handleAssistantMessage(sdkMessage: SDKMessage, ctx: MessageContext): Ha
             id: block.id,
             name: block.name,
             input: block.input,
+            status: 'running',
           };
           log.info('Tool call received', { toolName: block.name, toolId: block.id }, sessionId);
           sessionStore.addToolCallToMessage(sessionId, messageId, toolCall);
@@ -138,12 +150,44 @@ function handleAssistantMessage(sdkMessage: SDKMessage, ctx: MessageContext): Ha
 
 /**
  * 处理 user 消息
- * 通常由客户端添加，SDK 返回的可忽略
+ * SDK 返回的 user 消息包含 tool_result（工具执行结果）
  */
-function handleUserMessage(_sdkMessage: SDKMessage, _ctx: MessageContext): HandleResult {
-  // 用户消息由客户端添加，SDK 返回的用户消息通常可忽略
-  void _sdkMessage;
-  void _ctx;
+function handleUserMessage(sdkMessage: SDKMessage, ctx: MessageContext): HandleResult {
+  const { sessionId } = ctx;
+
+  // user 消息中可能包含 tool_result
+  if (!sdkMessage.message?.content) {
+    log.debug('User message has no content', undefined, sessionId);
+    return { type: 'continue' };
+  }
+
+  const content = sdkMessage.message.content as ContentBlock[];
+  log.debug('Processing user message content', {
+    blockCount: content.length,
+    blockTypes: content.map(b => b.type)
+  }, sessionId);
+
+  for (const block of content) {
+    if (block.type === 'tool_result') {
+      // 处理工具执行结果
+      log.debug('Found tool_result block', {
+        tool_use_id: block.tool_use_id,
+        hasContent: block.content !== undefined,
+        contentType: typeof block.content,
+        is_error: block.is_error
+      }, sessionId);
+
+      if (block.tool_use_id && block.content !== undefined) {
+        const resultContent = typeof block.content === 'string'
+          ? block.content
+          : JSON.stringify(block.content, null, 2);
+        const isError = block.is_error;
+        log.info('Tool result received (from user message)', { toolId: block.tool_use_id, isError, contentLength: resultContent.length }, sessionId);
+        sessionStore.updateToolCallResult(sessionId, block.tool_use_id, resultContent, isError);
+      }
+    }
+  }
+
   return { type: 'continue' };
 }
 

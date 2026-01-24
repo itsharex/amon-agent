@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { v4 as uuidv4 } from 'uuid';
-import { Session, Message, MessageContentBlock, ToolCall } from '../../shared/types';
+import { Session, Message, MessageContentBlock, ToolCall, ToolCallStatus } from '../../shared/types';
 import { AUTO_SAVE_INTERVAL_MS } from '../../shared/constants';
 import { persistence, DEFAULT_WORKSPACE } from './persistence';
 import * as configStore from './configStore';
@@ -204,6 +204,58 @@ class SessionStore extends EventEmitter {
 
     this.markDirty(sessionId);
     this.emit('messages:updated', sessionId, session.messages);
+  }
+
+  /**
+   * 更新工具调用的状态
+   */
+  updateToolCallStatus(sessionId: string, messageId: string, toolId: string, status: ToolCallStatus): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+
+    const message = session.messages.find(m => m.id === messageId);
+    if (!message || !message.contentBlocks) return;
+
+    const toolBlock = message.contentBlocks.find(
+      b => b.type === 'tool_call' && b.toolCall.id === toolId
+    );
+    if (!toolBlock || toolBlock.type !== 'tool_call') return;
+
+    toolBlock.toolCall.status = status;
+    this.markDirty(sessionId);
+    this.emit('messages:updated', sessionId, session.messages);
+  }
+
+  /**
+   * 更新工具调用的输出结果
+   */
+  updateToolCallResult(sessionId: string, toolId: string, output: string, isError?: boolean): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      log.warn('updateToolCallResult: session not found', { sessionId, toolId });
+      return;
+    }
+
+    // 遍历所有消息找到对应的工具调用
+    for (const message of session.messages) {
+      if (!message.contentBlocks) continue;
+
+      const toolBlock = message.contentBlocks.find(
+        b => b.type === 'tool_call' && b.toolCall.id === toolId
+      );
+      if (toolBlock && toolBlock.type === 'tool_call') {
+        log.info('Updating tool call result', { toolId, isError, outputLength: output.length }, sessionId);
+        toolBlock.toolCall.output = output;
+        toolBlock.toolCall.status = isError ? 'error' : 'completed';
+        toolBlock.toolCall.isError = isError;
+        this.markDirty(sessionId);
+        this.emit('messages:updated', sessionId, session.messages);
+        return;
+      }
+    }
+
+    // 如果没找到，记录警告
+    log.warn('updateToolCallResult: tool call not found', { sessionId, toolId });
   }
 
   /**

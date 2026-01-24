@@ -4,6 +4,7 @@ export type {
   Message,
   MessageContentBlock,
   ToolCall,
+  ToolCallStatus,
   Settings,
   AgentSettings,
   Shortcuts,

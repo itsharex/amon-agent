@@ -58,11 +58,15 @@ export interface Message {
   tokenUsage?: TokenUsage; // Token 用量信息
 }
 
+export type ToolCallStatus = 'pending' | 'running' | 'completed' | 'error';
+
 export interface ToolCall {
   id: string;
   name: string;
   input: Record<string, unknown>;
   output?: string;
+  status: ToolCallStatus;
+  isError?: boolean;
 }
 
 // ==================== SDK 消息类型 ====================
@@ -122,7 +126,7 @@ export interface StreamEvent {
 export type ContentBlock =
   | { type: 'text'; text: string }
   | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
-  | { type: 'tool_result'; tool_use_id: string; content: string }
+  | { type: 'tool_result'; tool_use_id: string; content: string | unknown[]; is_error?: boolean }
   | { type: 'thinking'; thinking: string };
 
 // ==================== 权限请求类型 ====================
