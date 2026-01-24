@@ -16,20 +16,20 @@ const PermissionBlock: React.FC<PermissionBlockProps> = ({ permission }) => {
     <div
       className={`my-2 rounded-lg border overflow-hidden ${
         isAllowed
-          ? 'border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/50 dark:bg-emerald-900/10'
-          : 'border-red-200 dark:border-red-800/50 bg-red-50/50 dark:bg-red-900/10'
+          ? 'border-success/30 bg-success/5'
+          : 'border-destructive/30 bg-destructive/5'
       }`}
     >
       {/* 头部 */}
       <div className="flex items-center gap-2 px-3 py-2">
         {isAllowed ? (
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
+          <CheckCircle2 className="w-4 h-4 text-success" />
         ) : (
-          <XCircle className="w-4 h-4 text-red-600 dark:text-red-500" />
+          <XCircle className="w-4 h-4 text-destructive" />
         )}
         <span
           className={`text-sm font-medium ${
-            isAllowed ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'
+            isAllowed ? 'text-success' : 'text-destructive'
           }`}
         >
           {isAllowed ? '已允许' : '已拒绝'}
@@ -38,16 +38,16 @@ const PermissionBlock: React.FC<PermissionBlockProps> = ({ permission }) => {
 
       {/* 工具信息 */}
       <div className="px-3 pb-3">
-        <div className={`flex items-start gap-2.5 p-2.5 rounded-md ${config.bgColor}`}>
-          <div className={`p-1.5 rounded bg-white dark:bg-gray-800 shadow-sm ${config.color}`}>
+        <div className="flex items-start gap-2.5 p-2.5 rounded-md bg-muted/50 border border-border">
+          <div className="p-1.5 rounded bg-card shadow-sm text-muted-foreground">
             {config.icon}
           </div>
           <div className="flex-1 min-w-0">
-            <div className={`text-sm font-medium ${config.color}`}>
+            <div className="text-sm font-medium text-foreground">
               {config.name}
             </div>
             {summary && (
-              <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-400 font-mono break-all line-clamp-2">
+              <div className="mt-0.5 text-xs text-muted-foreground font-mono break-all line-clamp-2">
                 {summary}
               </div>
             )}

@@ -95,17 +95,17 @@ const SettingsWindow: React.FC = () => {
 
   if (useSettingsStore.getState().isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-main-background dark:bg-dark-main-background">
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">加载中...</p>
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">加载中...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex bg-main-background dark:bg-dark-main-background">
+    <div className="h-screen flex bg-background">
       {/* 可拖拽的标题栏区域 */}
       <div
         className="absolute top-0 left-0 right-0 h-10 z-10"
@@ -113,7 +113,7 @@ const SettingsWindow: React.FC = () => {
       />
 
       {/* 侧边栏 */}
-      <div className="w-48 bg-sidebar-background dark:bg-dark-sidebar-background flex flex-col">
+      <div className="w-48 bg-sidebar-background flex flex-col">
         <div className="h-10" />
         <nav className="flex-1 p-2 space-y-1">
           {tabs.map((tab) => (
@@ -123,8 +123,8 @@ const SettingsWindow: React.FC = () => {
               className={`
                 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors
                 ${activeTab === tab.id
-                  ? 'bg-sidebar-hover dark:bg-dark-sidebar-hover text-gray-900 dark:text-gray-100'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-sidebar-hover dark:hover:bg-dark-sidebar-hover'}
+                  ? 'bg-sidebar-accent text-foreground'
+                  : 'text-muted-foreground hover:bg-sidebar-accent'}
               `}
             >
               {tab.icon}
@@ -139,8 +139,8 @@ const SettingsWindow: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-6">
           {/* 错误提示 */}
           {saveError && saveError.length > 0 && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <ul className="text-sm text-red-600 dark:text-red-400 space-y-1">
+            <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+              <ul className="text-sm text-destructive space-y-1">
                 {saveError.map((error, index) => (
                   <li key={index}>
                     {error.field === '_global' ? error.message : `${error.field}: ${error.message}`}
@@ -152,7 +152,7 @@ const SettingsWindow: React.FC = () => {
 
           {/* 标题 */}
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            <h1 className="text-2xl font-semibold text-foreground">
               {tabs.find(tab => tab.id === activeTab)?.label}
             </h1>
           </div>
@@ -165,14 +165,14 @@ const SettingsWindow: React.FC = () => {
           <div className="p-4 flex justify-end gap-3">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-foreground bg-muted rounded-lg hover:bg-accent transition-colors"
             >
               关闭
             </button>
             <button
               onClick={handleSave}
               disabled={isSaving || !hasChanges}
-              className="px-6 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               保存
             </button>

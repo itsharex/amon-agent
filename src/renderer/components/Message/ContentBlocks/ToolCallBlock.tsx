@@ -79,11 +79,11 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
   const inputSummary = getInputSummary(toolCall.name, toolCall.input);
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 overflow-hidden">
+    <div className="rounded-lg border border-border bg-muted overflow-hidden">
       {/* 头部 - 可点击折叠 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-600 dark:text-gray-400"
+        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted-foreground"
       >
         {/* 折叠图标 */}
         <ChevronRight className={`w-3 h-3 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
@@ -107,8 +107,8 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
         <div className="border-t border-inherit">
           {/* 输入参数 */}
           <div className="px-3 py-2">
-            <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Input</div>
-            <pre className="text-xs font-mono bg-black/5 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-40 overflow-y-auto">
+            <div className="text-xs font-medium text-muted-foreground mb-1">Input</div>
+            <pre className="text-xs font-mono bg-black/5 dark:bg-white/10 text-foreground rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-40 overflow-y-auto">
               {JSON.stringify(toolCall.input, null, 2)}
             </pre>
           </div>
@@ -116,8 +116,8 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
           {/* 输出结果 */}
           {toolCall.output && (
             <div className="px-3 py-2 border-t border-inherit">
-              <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Output</div>
-              <pre className="text-xs font-mono bg-black/5 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-60 overflow-y-auto">
+              <div className="text-xs font-medium text-muted-foreground mb-1">Output</div>
+              <pre className="text-xs font-mono bg-black/5 dark:bg-white/10 text-foreground rounded p-2 overflow-x-auto whitespace-pre-wrap break-all max-h-60 overflow-y-auto">
                 {toolCall.output}
               </pre>
             </div>

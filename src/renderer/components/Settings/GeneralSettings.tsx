@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSettingsStore } from '../../store/settingsStore';
+import { useSettingsStore, applyTheme } from '../../store/settingsStore';
 import { Sun, Moon, Monitor } from 'lucide-react';
 
 const THEMES = [
@@ -20,18 +20,6 @@ const THEMES = [
   },
 ];
 
-// 应用主题到 DOM
-function applyTheme(theme: 'light' | 'dark' | 'system'): void {
-  const root = document.documentElement;
-
-  if (theme === 'system') {
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    root.classList.toggle('dark', isDark);
-  } else {
-    root.classList.toggle('dark', theme === 'dark');
-  }
-}
-
 const GeneralSettings: React.FC = () => {
   const { formData, setFormData, saveTheme } = useSettingsStore();
 
@@ -47,7 +35,7 @@ const GeneralSettings: React.FC = () => {
     <div className="space-y-6">
       {/* 主题设置 */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+        <label className="block text-sm font-medium text-foreground mb-3">
           Theme
         </label>
         <div className="grid grid-cols-3 gap-3">
@@ -59,8 +47,8 @@ const GeneralSettings: React.FC = () => {
                 flex flex-col items-center gap-2 p-4 rounded-xl cursor-pointer
                 border-2 transition-all duration-150
                 ${formData.theme === theme.id
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                  : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-accent'}
               `}
             >
               {theme.icon}

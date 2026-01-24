@@ -18,7 +18,7 @@ const NewSessionButton: React.FC = () => {
       className="h-8 w-8"
       title="新建会话"
     >
-      <SquarePen className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+      <SquarePen className="h-4 w-4 text-muted-foreground" />
     </Button>
   );
 };

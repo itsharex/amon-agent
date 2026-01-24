@@ -130,13 +130,13 @@ const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, onReset,
           flex-1 px-3 py-2 rounded-lg text-sm cursor-pointer select-none
           transition-all duration-150
           ${isRecording
-            ? 'bg-primary-100 dark:bg-primary-900/30 border-2 border-primary-500 text-primary-700 dark:text-primary-300'
-            : 'bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+            ? 'bg-primary/20 border-2 border-primary text-primary'
+            : 'bg-muted border border-border text-foreground hover:bg-accent'
           }
         `}
       >
         {isRecording ? (
-          <span className="text-primary-500 dark:text-primary-400">按下快捷键...</span>
+          <span className="text-primary">按下快捷键...</span>
         ) : (
           <span className="font-mono">{formatShortcut(value)}</span>
         )}
@@ -144,7 +144,7 @@ const ShortcutInput: React.FC<ShortcutInputProps> = ({ value, onChange, onReset,
       {!isDefault && (
         <button
           onClick={onReset}
-          className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          className="p-2 text-muted-foreground hover:text-foreground transition-colors"
           title="恢复默认"
         >
           <RotateCcw className="w-4 h-4" />
@@ -184,12 +184,12 @@ const ShortcutsSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           点击快捷键区域，然后按下新的快捷键组合来更改
         </p>
         <button
           onClick={handleResetAll}
-          className="text-sm text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+          className="text-sm text-primary hover:text-primary/80 transition-colors"
         >
           全部恢复默认
         </button>
@@ -199,10 +199,10 @@ const ShortcutsSettings: React.FC = () => {
         {SHORTCUT_ITEMS.map((item) => (
           <div key={item.key} className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+              <label className="block text-sm font-medium text-foreground">
                 {item.label}
               </label>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {item.description}
               </p>
             </div>

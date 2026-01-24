@@ -33,11 +33,11 @@ const ToolGroup: React.FC<ToolGroupProps> = ({ blocks, isStreaming, defaultColla
   if (toolCallBlocks.length === 0) return null;
 
   return (
-    <div className="my-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 overflow-hidden">
+    <div className="my-3 rounded-lg border border-border bg-muted/50 overflow-hidden">
       {/* 折叠标题 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
+        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-tool-foreground hover:text-tool hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
         <span className="flex items-center gap-1.5">
@@ -58,7 +58,7 @@ const ToolGroup: React.FC<ToolGroupProps> = ({ blocks, isStreaming, defaultColla
       {isExpanded && (
         <div
           ref={containerRef}
-          className="p-2 space-y-2 border-t border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto"
+          className="p-2 space-y-2 border-t border-border max-h-96 overflow-y-auto"
         >
           {toolCallBlocks.map((block) => (
             <ToolCallBlock key={`tool-${block.toolCall.id}`} toolCall={block.toolCall} />

@@ -75,7 +75,7 @@ const SessionList: React.FC = () => {
 
   if (sessions.length === 0) {
     return (
-      <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+      <div className="px-4 py-8 text-center text-sm text-muted-foreground">
         暂无会话
       </div>
     );
@@ -92,8 +92,8 @@ const SessionList: React.FC = () => {
             transition-colors duration-150
             ${
               session.id === currentSessionId
-                ? 'bg-sidebar-hover dark:bg-dark-sidebar-hover text-gray-900 dark:text-gray-100'
-                : 'hover:bg-sidebar-hover dark:hover:bg-dark-sidebar-hover text-gray-700 dark:text-gray-300'
+                ? 'bg-sidebar-accent text-foreground'
+                : 'hover:bg-sidebar-accent text-foreground'
             }
           `}
         >
@@ -120,7 +120,7 @@ const SessionList: React.FC = () => {
                 >
                   {session.name}
                 </span>
-                <span className="block text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                <span className="block text-xs text-muted-foreground mt-0.5">
                   {formatTime(session.updatedAt)}
                 </span>
               </div>
@@ -128,7 +128,7 @@ const SessionList: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={(e) => handleDelete(e, session.id, session.name)}
-                className="opacity-0 group-hover:opacity-100 h-7 w-7 text-gray-400 hover:text-red-500 flex-shrink-0"
+                className="opacity-0 group-hover:opacity-100 h-7 w-7 text-muted-foreground hover:text-destructive flex-shrink-0"
                 title="删除会话"
               >
                 <Trash2 className="h-4 w-4" />

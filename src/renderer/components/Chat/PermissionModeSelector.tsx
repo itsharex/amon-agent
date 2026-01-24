@@ -68,8 +68,8 @@ const PermissionModeSelector: React.FC<PermissionModeSelectorProps> = ({ session
           flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs border
           transition-colors duration-150
           ${isOverridden
-            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-800'
-            : 'text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+            ? 'bg-primary/20 text-primary border-primary/30'
+            : 'text-foreground border-border hover:bg-accent'
           }
         `}
       >
@@ -83,8 +83,8 @@ const PermissionModeSelector: React.FC<PermissionModeSelectorProps> = ({ session
 
       {/* 下拉菜单 */}
       {open && (
-        <div className="absolute bottom-full left-0 mb-1 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-          <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+        <div className="absolute bottom-full left-0 mb-1 w-56 bg-popover rounded-lg shadow-lg border border-border py-1 z-50">
+          <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
             当前会话权限模式
           </div>
           {PERMISSION_MODES.map((mode) => (
@@ -93,27 +93,27 @@ const PermissionModeSelector: React.FC<PermissionModeSelectorProps> = ({ session
               onClick={() => handleModeSelect(mode.value)}
               className={`
                 w-full flex items-start gap-3 px-3 py-2 text-left
-                hover:bg-gray-50 dark:hover:bg-gray-700/50
-                ${currentMode === mode.value ? 'bg-primary-50 dark:bg-primary-900/20' : ''}
+                hover:bg-accent
+                ${currentMode === mode.value ? 'bg-primary/10' : ''}
               `}
             >
               <div className={`
                 mt-0.5
-                ${currentMode === mode.value ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'}
+                ${currentMode === mode.value ? 'text-primary' : 'text-muted-foreground'}
               `}>
                 {mode.icon}
               </div>
               <div className="flex-1 min-w-0">
                 <div className={`
                   text-sm font-medium
-                  ${currentMode === mode.value ? 'text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-200'}
+                  ${currentMode === mode.value ? 'text-primary' : 'text-foreground'}
                 `}>
                   {mode.label}
                   {mode.value === settings.agent.permissionMode && (
-                    <span className="ml-1.5 text-[10px] text-gray-400 dark:text-gray-500">(全局)</span>
+                    <span className="ml-1.5 text-[10px] text-muted-foreground">(全局)</span>
                   )}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <div className="text-xs text-muted-foreground truncate">
                   {mode.description}
                 </div>
               </div>
@@ -121,10 +121,10 @@ const PermissionModeSelector: React.FC<PermissionModeSelectorProps> = ({ session
           ))}
           {isOverridden && (
             <>
-              <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+              <div className="border-t border-border my-1" />
               <button
                 onClick={handleReset}
-                className="w-full px-3 py-2 text-left text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                className="w-full px-3 py-2 text-left text-xs text-muted-foreground hover:bg-accent"
               >
                 重置为全局设置
               </button>

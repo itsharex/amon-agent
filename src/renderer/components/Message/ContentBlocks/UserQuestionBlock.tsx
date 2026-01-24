@@ -26,8 +26,8 @@ const UserQuestionBlock: React.FC<UserQuestionBlockProps> = ({ userQuestion }) =
     <div
       className={`my-2 rounded-lg border overflow-hidden ${
         hasAnswers
-          ? 'border-blue-200 dark:border-blue-800/50 bg-blue-50/50 dark:bg-blue-900/10'
-          : 'border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50'
+          ? 'border-info-border bg-info-muted'
+          : 'border-border bg-muted/50'
       }`}
     >
       {/* 头部 - 可点击折叠/展开 */}
@@ -37,22 +37,22 @@ const UserQuestionBlock: React.FC<UserQuestionBlockProps> = ({ userQuestion }) =
       >
         {/* 折叠/展开图标 */}
         {isExpanded ? (
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
         ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
         )}
 
         {/* 状态图标 */}
         {hasAnswers ? (
-          <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+          <CheckCircle2 className="w-4 h-4 text-info" />
         ) : (
-          <MessageCircleQuestion className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          <MessageCircleQuestion className="w-4 h-4 text-muted-foreground" />
         )}
 
         {/* 状态文字 */}
         <span
           className={`text-sm font-medium ${
-            hasAnswers ? 'text-blue-700 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'
+            hasAnswers ? 'text-info-muted-foreground' : 'text-muted-foreground'
           }`}
         >
           {hasAnswers ? '已回答' : '已跳过'}
@@ -60,7 +60,7 @@ const UserQuestionBlock: React.FC<UserQuestionBlockProps> = ({ userQuestion }) =
 
         {/* 折叠时显示答案摘要 */}
         {!isExpanded && hasAnswers && (
-          <span className="text-xs text-gray-500 dark:text-gray-400 truncate ml-2">
+          <span className="text-xs text-muted-foreground truncate ml-2">
             {getAnswerSummary()}
           </span>
         )}
@@ -74,31 +74,31 @@ const UserQuestionBlock: React.FC<UserQuestionBlockProps> = ({ userQuestion }) =
             return (
               <div
                 key={index}
-                className="p-2.5 rounded-md bg-white dark:bg-gray-800/50"
+                className="p-2.5 rounded-md bg-card"
               >
                 {/* 问题标签和内容 */}
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
+                  <span className="text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                     {q.header}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-sm text-foreground mb-2">
                   {q.question}
                 </p>
 
                 {/* 答案 */}
                 {answer ? (
-                  <div className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                  <div className="flex items-start gap-2 p-2 bg-info-muted rounded-md">
+                    <span className="text-xs font-medium text-info whitespace-nowrap">
                       回答:
                     </span>
-                    <span className="text-sm text-blue-800 dark:text-blue-300">
+                    <span className="text-sm text-info-muted-foreground">
                       {answer}
                     </span>
                   </div>
                 ) : (
-                  <div className="p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                  <div className="p-2 bg-muted rounded-md">
+                    <span className="text-xs text-muted-foreground italic">
                       未回答
                     </span>
                   </div>

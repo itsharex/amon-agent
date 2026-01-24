@@ -130,10 +130,10 @@ const ProviderSettings: React.FC = () => {
   };
 
   const renderForm = (onSave: () => void, onCancel: () => void) => (
-    <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-primary-500">
+    <div className="space-y-3 p-4 bg-muted rounded-lg border border-primary">
       {/* 名称 */}
       <div>
-        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-1">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <Server className="w-3 h-3" />
           名称
         </label>
@@ -142,17 +142,17 @@ const ProviderSettings: React.FC = () => {
           value={formValues.name}
           onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
           placeholder="例如：Claude、GLM、Minimax"
-          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                     placeholder-gray-400 dark:placeholder-gray-500
-                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg
+                     bg-background text-foreground
+                     placeholder-muted-foreground
+                     focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
-        {formErrors.name && <p className="text-xs text-red-500 mt-1">{formErrors.name}</p>}
+        {formErrors.name && <p className="text-xs text-destructive mt-1">{formErrors.name}</p>}
       </div>
 
       {/* API URL */}
       <div>
-        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-1">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <Globe className="w-3 h-3" />
           API URL
         </label>
@@ -161,17 +161,17 @@ const ProviderSettings: React.FC = () => {
           value={formValues.apiUrl}
           onChange={(e) => setFormValues({ ...formValues, apiUrl: e.target.value })}
           placeholder="https://api.anthropic.com"
-          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                     placeholder-gray-400 dark:placeholder-gray-500
-                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg
+                     bg-background text-foreground
+                     placeholder-muted-foreground
+                     focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
-        {formErrors.apiUrl && <p className="text-xs text-red-500 mt-1">{formErrors.apiUrl}</p>}
+        {formErrors.apiUrl && <p className="text-xs text-destructive mt-1">{formErrors.apiUrl}</p>}
       </div>
 
       {/* API Key */}
       <div>
-        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-1">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <Key className="w-3 h-3" />
           API Key
         </label>
@@ -180,17 +180,17 @@ const ProviderSettings: React.FC = () => {
           value={formValues.apiKey}
           onChange={(e) => setFormValues({ ...formValues, apiKey: e.target.value })}
           placeholder="sk-ant-..."
-          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                     placeholder-gray-400 dark:placeholder-gray-500
-                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg
+                     bg-background text-foreground
+                     placeholder-muted-foreground
+                     focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
-        {formErrors.apiKey && <p className="text-xs text-red-500 mt-1">{formErrors.apiKey}</p>}
+        {formErrors.apiKey && <p className="text-xs text-destructive mt-1">{formErrors.apiKey}</p>}
       </div>
 
       {/* 模型 */}
       <div>
-        <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-1">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
           <Cpu className="w-3 h-3" />
           模型
         </label>
@@ -199,28 +199,28 @@ const ProviderSettings: React.FC = () => {
           value={formValues.model}
           onChange={(e) => setFormValues({ ...formValues, model: e.target.value })}
           placeholder="claude-sonnet-4-20250514"
-          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                     placeholder-gray-400 dark:placeholder-gray-500
-                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg
+                     bg-background text-foreground
+                     placeholder-muted-foreground
+                     focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
-        {formErrors.model && <p className="text-xs text-red-500 mt-1">{formErrors.model}</p>}
+        {formErrors.model && <p className="text-xs text-destructive mt-1">{formErrors.model}</p>}
       </div>
 
       {/* 操作按钮 */}
       <div className="flex justify-end gap-2 pt-2">
         <button
           onClick={onCancel}
-          className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400
-                     hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="px-3 py-1.5 text-sm text-muted-foreground
+                     hover:bg-accent rounded-lg transition-colors"
         >
           取消
         </button>
         <button
           onClick={onSave}
           className="flex items-center gap-1 px-3 py-1.5 text-sm
-                     bg-primary-500 text-white rounded-lg
-                     hover:bg-primary-600 transition-colors"
+                     bg-primary text-primary-foreground rounded-lg
+                     hover:bg-primary/90 transition-colors"
         >
           <Check className="w-4 h-4" />
           保存
@@ -234,8 +234,8 @@ const ProviderSettings: React.FC = () => {
       {/* 标题和添加按钮 */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">Provider 列表</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <h3 className="text-sm font-medium text-foreground">Provider 列表</h3>
+          <p className="text-xs text-muted-foreground mt-1">
             配置多个 AI 服务提供商，选择一个作为当前使用
           </p>
         </div>
@@ -243,8 +243,8 @@ const ProviderSettings: React.FC = () => {
           <button
             onClick={handleAddProvider}
             className="flex items-center gap-2 px-3 py-1.5 text-sm
-                       bg-primary-500 text-white rounded-lg
-                       hover:bg-primary-600 transition-colors"
+                       bg-primary text-primary-foreground rounded-lg
+                       hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             添加
@@ -257,7 +257,7 @@ const ProviderSettings: React.FC = () => {
 
       {/* Provider 列表 */}
       {providers.length === 0 && !isAdding ? (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+        <div className="text-center py-8 text-muted-foreground bg-muted rounded-lg">
           <Server className="w-10 h-10 mx-auto mb-2 opacity-50" />
           <p className="text-sm">暂无 Provider</p>
           <p className="text-xs mt-1">点击上方按钮添加</p>
@@ -272,31 +272,31 @@ const ProviderSettings: React.FC = () => {
                 <div
                   className={`flex items-center gap-3 p-3 rounded-lg border transition-colors
                     ${activeProviderId === provider.id
-                      ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-500'
-                      : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-muted border-border'
                     }`}
                 >
                   {/* 图标 */}
                   <div className="flex-shrink-0">
-                    <Server className={`w-5 h-5 ${activeProviderId === provider.id ? 'text-primary-500' : 'text-gray-400'}`} />
+                    <Server className={`w-5 h-5 ${activeProviderId === provider.id ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
 
                   {/* 信息 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-700 dark:text-gray-200 truncate">
+                      <span className="font-medium text-foreground truncate">
                         {provider.name}
                       </span>
                       {activeProviderId === provider.id && (
                         <span className="flex items-center gap-1 px-1.5 py-0.5 text-xs
-                                       bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400
+                                       bg-primary/20 text-primary
                                        rounded">
                           <CheckCircle className="w-3 h-3" />
                           当前使用
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
                       {provider.model} · {provider.apiUrl}
                     </p>
                   </div>
@@ -307,8 +307,8 @@ const ProviderSettings: React.FC = () => {
                       <button
                         onClick={() => handleSetActive(provider.id)}
                         className="flex items-center gap-1 px-2 py-1 text-xs
-                                   text-primary-600 dark:text-primary-400
-                                   hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded
+                                   text-primary
+                                   hover:bg-primary/10 rounded
                                    transition-colors"
                         title="启用"
                       >
@@ -318,8 +318,8 @@ const ProviderSettings: React.FC = () => {
                     )}
                     <button
                       onClick={() => handleStartEdit(provider)}
-                      className="p-1.5 text-gray-500 hover:text-primary-600
-                                 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded
+                      className="p-1.5 text-muted-foreground hover:text-primary
+                                 hover:bg-primary/10 rounded
                                  transition-colors"
                       title="编辑"
                     >
@@ -327,8 +327,8 @@ const ProviderSettings: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleDeleteProvider(provider)}
-                      className="p-1.5 text-gray-500 hover:text-red-600
-                                 hover:bg-red-50 dark:hover:bg-red-900/20 rounded
+                      className="p-1.5 text-muted-foreground hover:text-destructive
+                                 hover:bg-destructive/10 rounded
                                  transition-colors"
                       title="删除"
                     >
@@ -343,7 +343,7 @@ const ProviderSettings: React.FC = () => {
       )}
 
       {/* 说明文字 */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+      <div className="text-xs text-muted-foreground space-y-1">
         <p>Provider 用于配置 AI 服务的 API 连接信息。</p>
         <p>点击「启用」按钮可将其设为当前使用。</p>
       </div>

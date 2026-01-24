@@ -87,7 +87,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, defaultCol
   const totalBlocks = contentBlocks?.length || 0;
 
   return (
-    <div className="text-[15px] leading-relaxed w-full text-gray-800 dark:text-gray-100">
+    <div className="text-[15px] leading-relaxed w-full text-foreground">
       {hasContent ? (
         groupedBlocks.map((group, groupIndex) => {
           if (group.type === 'tool_group') {

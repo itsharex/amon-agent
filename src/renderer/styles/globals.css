@@ -6,73 +6,253 @@
 /* 配置 dark 模式使用 class 策略 */
 @variant dark (&:where(.dark, .dark *));
 
-/* Tailwind v4 主题配置 */
+/* ============================================
+   Tailwind v4 设计令牌 (@theme)
+   - 用于生成 utility classes (如 bg-primary-500)
+   - 不随主题切换变化的静态值
+   ============================================ */
 @theme {
-  /* Primary 颜色系列 */
-  --color-primary-50: #e6f3ff;
-  --color-primary-100: #cce7ff;
-  --color-primary-200: #99cfff;
-  --color-primary-300: #66b7ff;
-  --color-primary-400: #33a0ff;
-  --color-primary-500: #1d8aff;
-  --color-primary-600: #0076e6;
-  --color-primary-700: #0060b8;
-  --color-primary-800: #004a8a;
-  --color-primary-900: #00345c;
-
-  /* 自定义背景色 */
-  --color-sidebar-background: #fcfaf8;
-  --color-sidebar-hover: #f5f3ef;
-  --color-main-background: #ffffff;
-
-  /* Shadcn 基础颜色 (light mode) */
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(222.2 84% 4.9%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222.2 84% 4.9%);
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222.2 84% 4.9%);
-  --color-secondary: hsl(210 40% 96.1%);
-  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
-  --color-muted: hsl(210 40% 96.1%);
-  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
-  --color-accent: hsl(210 40% 96.1%);
-  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
-  --color-destructive: hsl(0 84.2% 60.2%);
-  --color-destructive-foreground: hsl(210 40% 98%);
-  --color-border: hsl(214.3 31.8% 91.4%);
-  --color-input: hsl(214.3 31.8% 91.4%);
-  --color-ring: hsl(211 100% 56%);
+  /* Primary 颜色系列 (OKLCH) */
+  --color-primary-50: oklch(0.97 0.02 250);
+  --color-primary-100: oklch(0.93 0.04 250);
+  --color-primary-200: oklch(0.86 0.08 250);
+  --color-primary-300: oklch(0.77 0.12 250);
+  --color-primary-400: oklch(0.68 0.16 250);
+  --color-primary-500: oklch(0.60 0.19 250);
+  --color-primary-600: oklch(0.52 0.17 250);
+  --color-primary-700: oklch(0.45 0.14 250);
+  --color-primary-800: oklch(0.38 0.11 250);
+  --color-primary-900: oklch(0.30 0.08 250);
 
   /* Radius 尺寸 */
   --radius-lg: 0.5rem;
   --radius-md: calc(0.5rem - 2px);
   --radius-sm: calc(0.5rem - 4px);
 
-  /* Dark mode 颜色覆盖 */
-  --color-dark-sidebar-background: #0b0a0b;
-  --color-dark-sidebar-hover: #1a1918;
-  --color-dark-main-background: #151516;
-  --color-dark-background: hsl(222.2 84% 4.9%);
-  --color-dark-foreground: hsl(210 40% 98%);
-  --color-dark-card: hsl(222.2 84% 4.9%);
-  --color-dark-card-foreground: hsl(210 40% 98%);
-  --color-dark-popover: hsl(222.2 84% 4.9%);
-  --color-dark-popover-foreground: hsl(210 40% 98%);
-  --color-dark-secondary: hsl(217.2 32.6% 17.5%);
-  --color-dark-secondary-foreground: hsl(210 40% 98%);
-  --color-dark-muted: hsl(217.2 32.6% 17.5%);
-  --color-dark-muted-foreground: hsl(215 20.2% 65.1%);
-  --color-dark-accent: hsl(217.2 32.6% 17.5%);
-  --color-dark-accent-foreground: hsl(210 40% 98%);
-  --color-dark-destructive: hsl(0 62.8% 30.6%);
-  --color-dark-destructive-foreground: hsl(210 40% 98%);
-  --color-dark-border: hsl(217.2 32.6% 17.5%);
-  --color-dark-input: hsl(217.2 32.6% 17.5%);
-  --color-dark-ring: hsl(211 100% 56%);
+  /* 语义色 - 引用 CSS 变量以支持主题切换 */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* 自定义语义色 */
+  --color-sidebar-background: var(--sidebar);
+  --color-sidebar-accent: var(--sidebar-accent);
+
+  /* 扩展语义色 */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-muted: var(--info-muted);
+  --color-info-muted-foreground: var(--info-muted-foreground);
+  --color-info-border: var(--info-border);
+
+  /* 用户消息气泡 */
+  --color-user-bubble: var(--user-bubble);
+  --color-user-bubble-foreground: var(--user-bubble-foreground);
+
+  /* 思考块 */
+  --color-thinking: var(--thinking);
+  --color-thinking-foreground: var(--thinking-foreground);
+  --color-thinking-border: var(--thinking-border);
+
+  /* 工具调用 */
+  --color-tool: var(--tool);
+  --color-tool-foreground: var(--tool-foreground);
 }
 
-/* 自定义滚动条 */
+/* ============================================
+   shadcn 语义变量 (OKLCH)
+   - Light mode 默认值
+   ============================================ */
+:root {
+  /* 基础色 */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+
+  /* 主色调 */
+  --primary: oklch(0.60 0.19 250);
+  --primary-foreground: oklch(0.985 0 0);
+
+  /* 次要色 */
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+
+  /* 静音色 */
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+
+  /* 强调色 */
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+
+  /* 危险色 */
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  /* 边框/输入 */
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.60 0.19 250);
+
+  /* 组件色 */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  /* 自定义区域色 */
+  --sidebar: oklch(0.986 0.006 75);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.963 0.008 75);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* 滚动条 */
+  --scrollbar-thumb: oklch(0.85 0 0);
+  --scrollbar-thumb-hover: oklch(0.70 0 0);
+
+  /* 代码块 */
+  --code-background: oklch(0.97 0 0);
+
+  /* 成功色 */
+  --success: oklch(0.60 0.17 160);
+  --success-foreground: oklch(0.985 0 0);
+
+  /* 警告色 */
+  --warning: oklch(0.75 0.15 85);
+  --warning-foreground: oklch(0.25 0.05 85);
+
+  /* 信息色 - blue 系列 */
+  --info: oklch(0.60 0.18 250);
+  --info-foreground: oklch(0.985 0 0);
+  --info-muted: oklch(0.97 0.02 250);
+  --info-muted-foreground: oklch(0.45 0.12 250);
+  --info-border: oklch(0.88 0.06 250);
+
+  /* 用户消息气泡 */
+  --user-bubble: oklch(0.65 0.04 200);
+  --user-bubble-foreground: oklch(1 0 0);
+
+  /* 思考块 - purple 系列 */
+  --thinking: oklch(0.47 0.25 300);
+  --thinking-foreground: oklch(0.55 0.24 300);
+  --thinking-border: oklch(0.90 0.08 300);
+
+  /* 工具调用 - orange 系列 */
+  --tool: oklch(0.55 0.21 45);
+  --tool-foreground: oklch(0.65 0.20 45);
+}
+
+/* ============================================
+   Dark mode 覆盖
+   ============================================ */
+.dark {
+  /* 基础色 */
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.99 0 0);
+
+    /* 主色调 */
+  --primary: oklch(0.68 0.16 250);
+  --primary-foreground: oklch(0.145 0 0);
+
+  /* 次要色 */
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  /* 静音色 */
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+
+  /* 强调色 */
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+
+  /* 危险色 */
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  /* 边框/输入 */
+  --border: oklch(1 0 0 / 18%);
+  --input: oklch(1 0 0 / 20%);
+  --ring: oklch(0.68 0.16 250);
+
+  /* 组件色 */
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  /* 自定义区域色 */
+  --sidebar: oklch(0.12 0.003 330);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.25 0.003 270);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 18%);
+  --sidebar-ring: oklch(0.556 0 0);
+
+  /* 滚动条 */
+  --scrollbar-thumb: oklch(0.35 0 0);
+  --scrollbar-thumb-hover: oklch(0.45 0 0);
+
+  /* 代码块 */
+  --code-background: oklch(0.20 0 0);
+
+  /* 成功色 */
+  --success: oklch(0.55 0.15 160);
+  --success-foreground: oklch(0.985 0 0);
+
+  /* 警告色 */
+  --warning: oklch(0.60 0.12 85);
+  --warning-foreground: oklch(0.985 0 0);
+
+  /* 信息色 - blue 系列 */
+  --info: oklch(0.60 0.15 250);
+  --info-foreground: oklch(0.985 0 0);
+  --info-muted: oklch(0.25 0.05 250);
+  --info-muted-foreground: oklch(0.75 0.10 250);
+  --info-border: oklch(0.35 0.08 250);
+
+  /* 用户消息气泡 */
+  --user-bubble: oklch(0.30 0.01 260);
+  --user-bubble-foreground: oklch(0.985 0 0);
+
+  /* 思考块 - purple 系列 */
+  --thinking: oklch(0.78 0.15 300);
+  --thinking-foreground: oklch(0.70 0.18 300);
+  --thinking-border: oklch(0.40 0.22 300);
+
+  /* 工具调用 - orange 系列 */
+  --tool: oklch(0.83 0.13 55);
+  --tool-foreground: oklch(0.75 0.16 50);
+}
+
+/* ============================================
+   自定义滚动条
+   ============================================ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -83,20 +263,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* 拖拽区域 */
@@ -108,7 +280,9 @@
   -webkit-app-region: no-drag;
 }
 
-/* 消息内容样式 */
+/* ============================================
+   消息内容样式
+   ============================================ */
 .message-content {
   font-size: 0.875rem;
   line-height: 1.625;
@@ -120,26 +294,18 @@
 }
 
 .message-content pre {
-  background-color: #f3f4f6;
+  background-color: var(--code-background);
   border-radius: 0.5rem;
   padding: 0.75rem;
   overflow-x: auto;
   margin: 0.5rem 0;
 }
 
-.dark .message-content pre {
-  background-color: #1f2937;
-}
-
 .message-content code {
-  background-color: #f3f4f6;
+  background-color: var(--code-background);
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
-}
-
-.dark .message-content code {
-  background-color: #1f2937;
 }
 
 .message-content pre code {
@@ -147,7 +313,9 @@
   padding: 0;
 }
 
-/* 动画 */
+/* ============================================
+   动画
+   ============================================ */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;

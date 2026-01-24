@@ -88,7 +88,7 @@ const DropdownTrigger = React.forwardRef<HTMLButtonElement, DropdownTriggerProps
         className={cn(
           'flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs',
           'transition-colors duration-150',
-          'text-gray-600 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-600/50',
+          'text-muted-foreground hover:bg-accent',
           className
         )}
         {...props}
@@ -130,8 +130,8 @@ const DropdownContent: React.FC<DropdownContentProps> = ({
   return (
     <div
       className={cn(
-        'absolute z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg',
-        'border border-gray-200 dark:border-gray-700 py-1',
+        'absolute z-50 bg-popover rounded-lg shadow-lg',
+        'border border-border py-1',
         position === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         align === 'start' ? 'left-0' : 'right-0',
         width,
@@ -154,8 +154,8 @@ const DropdownHeader: React.FC<DropdownHeaderProps> = ({ children, className }) 
   return (
     <div
       className={cn(
-        'px-3 py-2 text-xs text-gray-500 dark:text-gray-400',
-        'border-b border-gray-100 dark:border-gray-700',
+        'px-3 py-2 text-xs text-muted-foreground',
+        'border-b border-border',
         className
       )}
     >
@@ -187,8 +187,8 @@ const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(
         onClick={handleClick}
         className={cn(
           'w-full flex items-center gap-2 px-3 py-2 text-left text-sm',
-          'hover:bg-gray-50 dark:hover:bg-gray-700/50',
-          selected && 'bg-primary-50 dark:bg-primary-900/20',
+          'hover:bg-accent',
+          selected && 'bg-accent',
           className
         )}
         {...props}
@@ -197,7 +197,7 @@ const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(
           <div
             className={cn(
               'flex-shrink-0',
-              selected ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'
+              selected ? 'text-primary' : 'text-muted-foreground'
             )}
           >
             {icon}
@@ -208,14 +208,14 @@ const DropdownItem = React.forwardRef<HTMLButtonElement, DropdownItemProps>(
             className={cn(
               'font-medium truncate',
               selected
-                ? 'text-primary-600 dark:text-primary-400'
-                : 'text-gray-700 dark:text-gray-200'
+                ? 'text-primary'
+                : 'text-foreground'
             )}
           >
             {children}
           </div>
           {description && (
-            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <div className="text-xs text-muted-foreground truncate">
               {description}
             </div>
           )}
@@ -232,7 +232,7 @@ DropdownItem.displayName = 'DropdownItem';
 const DropdownSeparator: React.FC<{ className?: string }> = ({ className }) => {
   return (
     <div
-      className={cn('border-t border-gray-100 dark:border-gray-700 my-1', className)}
+      className={cn('border-t border-border my-1', className)}
     />
   );
 };

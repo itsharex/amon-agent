@@ -53,7 +53,7 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
 
   if (!currentSessionId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-main-background dark:bg-dark-main-background">
+      <div className="flex-1 flex items-center justify-center bg-background">
         {/* 展开按钮 - 侧边栏收起时显示 */}
         {sidebarCollapsed && (
           <div className="absolute top-0 left-0 h-12 drag-region flex items-center gap-1 px-2 pl-20">
@@ -64,7 +64,7 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
               className="no-drag h-8 w-8"
               title="展开侧边栏"
             >
-              <PanelLeft className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <PanelLeft className="h-4 w-4 text-muted-foreground" />
             </Button>
             <Button
               variant="ghost"
@@ -73,16 +73,16 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
               className="no-drag h-8 w-8"
               title="新建会话"
             >
-              <SquarePen className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <SquarePen className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>
         )}
         <div className="text-center">
-          <MessageSquare className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
-          <h2 className="text-xl font-medium text-gray-600 dark:text-gray-300 mb-2">
+          <MessageSquare className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
+          <h2 className="text-xl font-medium text-muted-foreground mb-2">
             开始新对话
           </h2>
-          <p className="text-gray-400 dark:text-gray-500">
+          <p className="text-muted-foreground">
             选择一个会话或创建新会话开始对话
           </p>
         </div>
@@ -91,7 +91,7 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-main-background dark:bg-dark-main-background overflow-hidden">
+    <div className="flex-1 flex flex-col bg-background overflow-hidden">
       {/* 会话标题和工作空间 */}
       <div className="h-14 drag-region flex items-center px-4">
         {/* 展开按钮 - 侧边栏收起时显示 */}
@@ -104,7 +104,7 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
               className="no-drag h-8 w-8 ml-16"
               title="展开侧边栏"
             >
-              <PanelLeft className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <PanelLeft className="h-4 w-4 text-muted-foreground" />
             </Button>
             <Button
               variant="ghost"
@@ -113,12 +113,12 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
               className="no-drag h-8 w-8"
               title="新建会话"
             >
-              <SquarePen className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <SquarePen className="h-4 w-4 text-muted-foreground" />
             </Button>
           </>
         )}
         <div className="flex-1 flex flex-col items-center justify-center relative">
-          <h2 className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+          <h2 className="text-sm font-medium text-foreground truncate">
             {currentSession?.name || '新会话'}
           </h2>
           {/* 工作空间指示器 */}
@@ -126,8 +126,8 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
             onClick={handleWorkspaceClick}
             className={`no-drag flex items-center gap-1 text-xs transition-colors
                        ${hasMessages
-                         ? 'text-gray-400 dark:text-gray-500'
-                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                         ? 'text-muted-foreground'
+                         : 'text-muted-foreground hover:text-foreground'}`}
             title={hasMessages ? '对话开始后无法更换工作空间' : '点击更换工作空间'}
           >
             <Folder className="h-3 w-3" />
@@ -159,10 +159,10 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
         <div className="flex justify-center pb-2">
           <button
             onClick={handleScrollToBottom}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-gray-800
-                       border border-gray-200 dark:border-gray-700
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-card
+                       border border-border
                        rounded-full shadow-sm hover:shadow-md
-                       text-xs text-gray-600 dark:text-gray-300
+                       text-xs text-muted-foreground
                        transition-all duration-200"
           >
             <ArrowDown className="w-3.5 h-3.5" />

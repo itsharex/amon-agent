@@ -83,15 +83,15 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
       />
       <div
         className="absolute top-full left-1/2 -translate-x-1/2 mt-2
-                   bg-white dark:bg-gray-800 rounded-lg shadow-lg
-                   border border-gray-200 dark:border-gray-700
+                   bg-popover rounded-lg shadow-lg
+                   border border-border
                    z-50 min-w-[280px] max-w-[320px] overflow-hidden"
       >
       {/* 警告提示 */}
       {hasMessages && (
-        <div className="px-3 py-2 text-xs text-amber-700 dark:text-amber-400
-                        bg-amber-50 dark:bg-amber-900/20
-                        border-b border-amber-200 dark:border-amber-800
+        <div className="px-3 py-2 text-xs text-warning
+                        bg-warning/10
+                        border-b border-warning/30
                         flex items-center gap-2">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
           <span>对话开始后无法更换工作空间</span>
@@ -108,34 +108,34 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
                       transition-colors text-left
                       ${hasMessages
                         ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-700'}
+                        : 'hover:bg-accent'}
                       ${currentWorkspace === DEFAULT_WORKSPACE_PATH
-                        ? 'bg-primary-50 dark:bg-primary-900/20'
+                        ? 'bg-primary/10'
                         : ''}`}
         >
           <Home className={`w-4 h-4 flex-shrink-0
-            ${currentWorkspace === DEFAULT_WORKSPACE_PATH ? 'text-primary-500' : 'text-gray-400'}`}
+            ${currentWorkspace === DEFAULT_WORKSPACE_PATH ? 'text-primary' : 'text-muted-foreground'}`}
           />
           <div className="flex-1 min-w-0">
             <div className={`font-medium truncate
               ${currentWorkspace === DEFAULT_WORKSPACE_PATH
-                ? 'text-primary-600 dark:text-primary-400'
-                : 'text-gray-700 dark:text-gray-200'}`}
+                ? 'text-primary'
+                : 'text-foreground'}`}
             >
               默认目录
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <div className="text-xs text-muted-foreground truncate">
               {DEFAULT_WORKSPACE_PATH}
             </div>
           </div>
           {currentWorkspace === DEFAULT_WORKSPACE_PATH && (
-            <Check className="w-4 h-4 text-primary-500 flex-shrink-0" />
+            <Check className="w-4 h-4 text-primary flex-shrink-0" />
           )}
         </button>
 
         {/* 分隔线 */}
         {workspaces.length > 0 && (
-          <div className="my-1 border-t border-gray-200 dark:border-gray-700" />
+          <div className="my-1 border-t border-border" />
         )}
 
         {/* 用户工作空间列表 */}
@@ -152,28 +152,28 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
                               transition-colors text-left
                               ${hasMessages
                                 ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-gray-100 dark:hover:bg-gray-700'}
+                                : 'hover:bg-accent'}
                               ${isSelected
-                                ? 'bg-primary-50 dark:bg-primary-900/20'
+                                ? 'bg-primary/10'
                                 : ''}`}
                 >
                   <FolderOpen className={`w-4 h-4 flex-shrink-0
-                    ${isSelected ? 'text-primary-500' : 'text-gray-400'}`}
+                    ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}
                   />
                   <div className="flex-1 min-w-0">
                     <div className={`font-medium truncate
                       ${isSelected
-                        ? 'text-primary-600 dark:text-primary-400'
-                        : 'text-gray-700 dark:text-gray-200'}`}
+                        ? 'text-primary'
+                        : 'text-foreground'}`}
                     >
                       {workspace.name}
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    <div className="text-xs text-muted-foreground truncate">
                       {formatPathWithTilde(workspace.path)}
                     </div>
                   </div>
                   {isSelected && (
-                    <Check className="w-4 h-4 text-primary-500 flex-shrink-0" />
+                    <Check className="w-4 h-4 text-primary flex-shrink-0" />
                   )}
                 </button>
               );
@@ -183,12 +183,12 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
       </div>
 
         {/* 添加新工作空间 */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-1">
+        <div className="border-t border-border p-1">
           <button
             onClick={handleAddNewWorkspace}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm
-                       text-primary-600 dark:text-primary-400
-                       hover:bg-primary-50 dark:hover:bg-primary-900/20
+                       text-primary
+                       hover:bg-primary/10
                        transition-colors"
           >
             <Plus className="w-4 h-4" />

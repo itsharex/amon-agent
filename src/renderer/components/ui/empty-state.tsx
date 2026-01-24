@@ -20,7 +20,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div
       className={cn(
-        'text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg',
+        'text-center py-8 text-muted-foreground bg-muted rounded-lg',
         className
       )}
     >

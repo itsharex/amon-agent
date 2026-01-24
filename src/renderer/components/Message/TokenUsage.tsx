@@ -24,23 +24,23 @@ function formatTokenCount(count: number): string {
  */
 const TokenUsage: React.FC<TokenUsageProps> = ({ usage }) => {
   return (
-    <div className="flex items-center gap-2 text-[11px] text-gray-400 dark:text-gray-500">
+    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
       <Zap className="w-3 h-3" />
       <span>
         {formatTokenCount(usage.inputTokens)} 输入 / {formatTokenCount(usage.outputTokens)} 输出
         {usage.cacheReadInputTokens && usage.cacheReadInputTokens > 0 && (
-          <span className="text-green-500 dark:text-green-400 ml-1">
+          <span className="text-success ml-1">
             ({formatTokenCount(usage.cacheReadInputTokens)} 缓存)
           </span>
         )}
       </span>
       {usage.cost !== undefined && usage.cost > 0 && (
-        <span className="text-gray-400 dark:text-gray-500">
+        <span className="text-muted-foreground">
           · ${usage.cost.toFixed(4)}
         </span>
       )}
       {usage.duration !== undefined && (
-        <span className="text-gray-400 dark:text-gray-500">
+        <span className="text-muted-foreground">
           · {(usage.duration / 1000).toFixed(1)}s
         </span>
       )}

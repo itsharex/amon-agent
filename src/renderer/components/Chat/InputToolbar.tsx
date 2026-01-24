@@ -23,7 +23,7 @@ const InputToolbar: React.FC<InputToolbarProps> = ({ isLoading, canSend, onSend,
         {/* 附件按钮 (UI 占位) */}
         <button
           disabled
-          className="p-2 rounded-lg text-gray-400 dark:text-gray-500 opacity-50 cursor-not-allowed"
+          className="p-2 rounded-lg text-muted-foreground opacity-50 cursor-not-allowed"
           title="附件 (开发中)"
         >
           <Paperclip className="w-4 h-4" />
@@ -43,8 +43,8 @@ const InputToolbar: React.FC<InputToolbarProps> = ({ isLoading, canSend, onSend,
             onClick={onStop}
             className="
               w-8 h-8 flex items-center justify-center
-              bg-gray-500 hover:bg-gray-600
-              text-white rounded-lg
+              bg-muted-foreground hover:bg-muted-foreground/80
+              text-background rounded-lg
               transition-colors
             "
             title="停止生成"
@@ -59,8 +59,8 @@ const InputToolbar: React.FC<InputToolbarProps> = ({ isLoading, canSend, onSend,
               w-8 h-8 flex items-center justify-center
               rounded-lg transition-colors
               ${canSend
-                ? 'bg-primary-500 hover:bg-primary-600 text-white'
-                : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                : 'bg-muted text-muted-foreground cursor-not-allowed'
               }
             `}
             title="发送消息"

@@ -10,7 +10,7 @@ export interface UserMessageProps {
  */
 const UserMessage: React.FC<UserMessageProps> = ({ message }) => {
   return (
-    <div className="px-4 py-3 bg-[#7299a0] dark:bg-[#393d42] text-white rounded-2xl rounded-br-md text-[15px] leading-relaxed">
+    <div className="px-4 py-3 bg-user-bubble text-user-bubble-foreground rounded-2xl rounded-br-md text-[15px] leading-relaxed">
       <div className="whitespace-pre-wrap">{message.content}</div>
     </div>
   );

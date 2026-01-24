@@ -17,7 +17,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   return (
     <div
       className={`
-        h-full bg-sidebar-background dark:bg-dark-sidebar-background
+        h-full bg-sidebar-background
         flex flex-col overflow-hidden transition-all duration-300 ease-in-out
         ${collapsed ? 'w-0' : 'w-56'}
       `}
@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             className="no-drag h-8 w-8"
             title="收起侧边栏"
           >
-            <PanelLeftClose className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
           </Button>
           <div className="no-drag">
             <NewSessionButton />
@@ -50,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
           <Button
             variant="ghost"
             onClick={handleOpenSettings}
-            className="w-full justify-start gap-2 text-gray-700 dark:text-gray-300"
+            className="w-full justify-start gap-2 text-foreground"
           >
             <Settings className="h-4 w-4" />
             <span>设置</span>

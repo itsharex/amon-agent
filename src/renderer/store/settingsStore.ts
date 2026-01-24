@@ -22,7 +22,7 @@ interface SettingsState {
 }
 
 // 应用主题
-function applyTheme(theme: 'light' | 'dark' | 'system'): void {
+export function applyTheme(theme: 'light' | 'dark' | 'system'): void {
   const root = document.documentElement;
 
   if (theme === 'system') {

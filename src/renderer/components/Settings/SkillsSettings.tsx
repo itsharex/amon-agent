@@ -28,33 +28,33 @@ const InstallDialog: React.FC<InstallDialogProps> = ({ skill, workspaces, onInst
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm mx-4 overflow-hidden"
+        className="bg-card rounded-xl shadow-xl w-full max-w-sm mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 头部 */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-base font-medium text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h3 className="text-base font-medium text-foreground">
             安装 {skill.metadata.name}
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1 rounded-lg hover:bg-accent transition-colors"
           >
-            <X className="w-4 h-4 text-gray-500" />
+            <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
 
         {/* 内容 */}
         <div className="p-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             安装位置
           </label>
           <select
             value={selectedTarget}
             onChange={(e) => setSelectedTarget(e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+            className="w-full px-3 py-2 text-sm rounded-lg border border-border
+                       bg-background text-foreground
+                       focus:ring-2 focus:ring-primary focus:border-primary
                        outline-none transition-colors"
           >
             <option value="system">系统级 (~/.claude/skills)</option>
@@ -64,7 +64,7 @@ const InstallDialog: React.FC<InstallDialogProps> = ({ skill, workspaces, onInst
               </option>
             ))}
           </select>
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-xs text-muted-foreground">
             {selectedTarget === 'system'
               ? '系统级 Skills 对所有会话可用'
               : '工作空间 Skills 仅在该工作空间内可用'}
@@ -72,19 +72,19 @@ const InstallDialog: React.FC<InstallDialogProps> = ({ skill, workspaces, onInst
         </div>
 
         {/* 底部按钮 */}
-        <div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div className="flex justify-end gap-2 p-4 border-t border-border bg-muted/50">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400
-                       hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="px-3 py-1.5 text-sm text-muted-foreground
+                       hover:bg-accent rounded-lg transition-colors"
           >
             取消
           </button>
           <button
             onClick={handleInstall}
-            className="px-3 py-1.5 text-sm text-white
-                       bg-primary-500 rounded-lg
-                       hover:bg-primary-600 transition-colors
+            className="px-3 py-1.5 text-sm text-primary-foreground
+                       bg-primary rounded-lg
+                       hover:bg-primary/90 transition-colors
                        flex items-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5" />
@@ -220,27 +220,27 @@ const SkillsSettings: React.FC = () => {
     <div
       key={skill.id}
       className="flex flex-col p-4 rounded-xl
-                 border-2 border-gray-200 dark:border-gray-600
-                 text-gray-500 dark:text-gray-400
+                 border-2 border-border
+                 text-muted-foreground
                  transition-all duration-150 h-full"
     >
       <div className="flex items-center gap-3 mb-3">
         <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center
-                        bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-          <Sparkles className="w-4 h-4 text-primary-500" />
+                        bg-primary/10 rounded-lg">
+          <Sparkles className="w-4 h-4 text-primary" />
         </div>
-        <div className="font-medium text-sm text-gray-700 dark:text-gray-200 truncate flex-1">
+        <div className="font-medium text-sm text-foreground truncate flex-1">
           {skill.metadata.name}
         </div>
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 flex-1">
+      <p className="text-xs text-muted-foreground line-clamp-2 flex-1">
         {skill.metadata.description}
       </p>
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
         <button
           onClick={(e) => handleOpenSkillFolder(e, skill.path)}
-          className="text-xs text-gray-400 dark:text-gray-500 truncate flex items-center gap-1
-                     hover:text-primary-500 transition-colors"
+          className="text-xs text-muted-foreground truncate flex items-center gap-1
+                     hover:text-primary transition-colors"
           title="打开文件夹"
         >
           <FolderOpen className="w-3 h-3 flex-shrink-0" />
@@ -250,7 +250,7 @@ const SkillsSettings: React.FC = () => {
           onClick={() => handleUninstall(skill)}
           disabled={uninstalling === skill.id}
           className="flex items-center gap-1 px-2 py-1 text-xs
-                     text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                     text-destructive hover:bg-destructive/10
                      rounded transition-colors
                      disabled:opacity-50 disabled:cursor-not-allowed"
           title="卸载"
@@ -269,25 +269,25 @@ const SkillsSettings: React.FC = () => {
     <div
       key={skill.id}
       className="flex flex-col p-4 rounded-xl
-                 border-2 border-gray-200 dark:border-gray-600
-                 text-gray-500 dark:text-gray-400
+                 border-2 border-border
+                 text-muted-foreground
                  transition-all duration-150 h-full"
     >
       <div className="flex items-center gap-3 mb-3">
         <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center
-                        bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-          <Sparkles className="w-4 h-4 text-primary-500" />
+                        bg-primary/10 rounded-lg">
+          <Sparkles className="w-4 h-4 text-primary" />
         </div>
-        <div className="font-medium text-sm text-gray-700 dark:text-gray-200 truncate flex-1">
+        <div className="font-medium text-sm text-foreground truncate flex-1">
           {skill.metadata.name}
         </div>
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 flex-1">
+      <p className="text-xs text-muted-foreground line-clamp-2 flex-1">
         {skill.metadata.description}
       </p>
-      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+      <div className="mt-3 pt-3 border-t border-border">
         {skill.installed ? (
-          <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+          <div className="flex items-center gap-2 text-xs text-success">
             <Check className="w-4 h-4" />
             <span>
               已安装到{skill.installedAt === 'system' ? '系统' : skill.installedWorkspace}
@@ -298,8 +298,8 @@ const SkillsSettings: React.FC = () => {
             onClick={() => setInstallDialog(skill)}
             disabled={installing === skill.id}
             className="flex items-center gap-2 px-3 py-1.5 text-xs
-                       text-white bg-primary-500 rounded-lg
-                       hover:bg-primary-600 transition-colors
+                       text-primary-foreground bg-primary rounded-lg
+                       hover:bg-primary/90 transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {installing === skill.id ? (
@@ -341,29 +341,29 @@ const SkillsSettings: React.FC = () => {
         <button
           onClick={() => toggleSection(sectionId)}
           className="w-full flex items-center gap-3 p-3 rounded-lg
-                     hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                     hover:bg-accent transition-colors"
         >
-          <div className="text-gray-400">
+          <div className="text-muted-foreground">
             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </div>
           {icon}
           <div className="flex-1 text-left">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              <span className="text-sm font-medium text-foreground">
                 {title}
               </span>
-              <span className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700
-                             text-gray-500 dark:text-gray-400 rounded">
+              <span className="text-xs px-1.5 py-0.5 bg-muted
+                             text-muted-foreground rounded">
                 {skills.length}
               </span>
             </div>
             {subtitle && skills.length > 0 && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
                 <span>{subtitle}</span>
                 {skillsPath && (
                   <span
                     onClick={handleOpenFolder}
-                    className="inline-flex items-center text-gray-400 hover:text-primary-500 transition-colors"
+                    className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors"
                     title="打开文件夹"
                   >
                     <Folder className="w-3 h-3" />
@@ -377,8 +377,8 @@ const SkillsSettings: React.FC = () => {
         {isExpanded && (
           <div className="mt-3 ml-7">
             {skills.length === 0 ? (
-              <div className="text-center py-8 text-gray-400 dark:text-gray-500
-                              bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="text-center py-8 text-muted-foreground
+                              bg-muted rounded-lg">
                 <Sparkles className="w-6 h-6 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">暂无 Skills</p>
               </div>
@@ -396,13 +396,13 @@ const SkillsSettings: React.FC = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <AlertCircle className="w-6 h-6 text-red-500 mb-3" />
-        <p className="text-sm text-red-500 mb-4">{error}</p>
+        <AlertCircle className="w-6 h-6 text-destructive mb-3" />
+        <p className="text-sm text-destructive mb-4">{error}</p>
         <button
           onClick={refreshAll}
           className="flex items-center gap-2 px-4 py-2 text-sm
-                     bg-primary-500 text-white rounded-lg
-                     hover:bg-primary-600 transition-colors"
+                     bg-primary text-primary-foreground rounded-lg
+                     hover:bg-primary/90 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           重试
@@ -418,20 +418,20 @@ const SkillsSettings: React.FC = () => {
     <div className="space-y-6">
       {/* 说明 */}
       <div>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-muted-foreground">
           Skills 是包含 SKILL.md 文件的文件夹，用于扩展 Claude 的能力。
           系统级 Skills 位于 ~/.claude/skills，工作空间 Skills 位于各工作空间的 .claude/skills 目录。
         </p>
       </div>
 
       {/* Tab 切换 */}
-      <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+      <div className="flex items-center gap-1 p-1 bg-muted rounded-lg">
         <button
           onClick={() => setActiveTab('installed')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors
             ${activeTab === 'installed'
-              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
             }`}
         >
           <FolderOpen className="w-4 h-4" />
@@ -441,8 +441,8 @@ const SkillsSettings: React.FC = () => {
           onClick={() => setActiveTab('recommended')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors
             ${activeTab === 'recommended'
-              ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
             }`}
         >
           <Download className="w-4 h-4" />
@@ -459,9 +459,9 @@ const SkillsSettings: React.FC = () => {
               onClick={loadInstalledSkills}
               disabled={isLoadingInstalled}
               className="flex items-center gap-2 px-3 py-1.5 text-sm
-                         text-gray-600 dark:text-gray-400
-                         bg-gray-100 dark:bg-gray-700 rounded-lg
-                         hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors
+                         text-muted-foreground
+                         bg-muted rounded-lg
+                         hover:bg-accent transition-colors
                          disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isLoadingInstalled ? 'animate-spin' : ''}`} />
@@ -472,8 +472,8 @@ const SkillsSettings: React.FC = () => {
           {/* Skills 列表 */}
           {isLoadingInstalled ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <RefreshCw className="w-6 h-6 text-primary-500 animate-spin mb-3" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">加载中...</p>
+              <RefreshCw className="w-6 h-6 text-primary animate-spin mb-3" />
+              <p className="text-sm text-muted-foreground">加载中...</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -481,7 +481,7 @@ const SkillsSettings: React.FC = () => {
               '系统 Skills',
               'system',
               skillsData?.systemSkills || [],
-              <Home className="w-5 h-5 text-gray-400" />,
+              <Home className="w-5 h-5 text-muted-foreground" />,
               '~/.claude/skills',
               '~/.claude/skills'
             )}
@@ -491,7 +491,7 @@ const SkillsSettings: React.FC = () => {
                 ws.workspaceName,
                 ws.workspacePath,
                 ws.skills,
-                <FolderOpen className="w-5 h-5 text-primary-500" />,
+                <FolderOpen className="w-5 h-5 text-primary" />,
                 `${formatPathWithTilde(ws.workspacePath)}/.claude/skills`,
                 `${ws.workspacePath}/.claude/skills`
               )
@@ -506,16 +506,16 @@ const SkillsSettings: React.FC = () => {
         <div className="space-y-4">
           {/* 头部 */}
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               官方推荐的 Skills，点击安装按钮添加到您的系统或工作空间
             </p>
             <button
               onClick={loadRecommendedSkills}
               disabled={isLoadingRecommended}
               className="flex items-center gap-2 px-3 py-1.5 text-sm
-                         text-gray-600 dark:text-gray-400
-                         bg-gray-100 dark:bg-gray-700 rounded-lg
-                         hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors
+                         text-muted-foreground
+                         bg-muted rounded-lg
+                         hover:bg-accent transition-colors
                          disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isLoadingRecommended ? 'animate-spin' : ''}`} />
@@ -526,12 +526,12 @@ const SkillsSettings: React.FC = () => {
           {/* 推荐 Skills 网格 */}
           {isLoadingRecommended ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <RefreshCw className="w-6 h-6 text-primary-500 animate-spin mb-3" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">从网络加载中...</p>
+              <RefreshCw className="w-6 h-6 text-primary animate-spin mb-3" />
+              <p className="text-sm text-muted-foreground">从网络加载中...</p>
             </div>
           ) : recommendedSkills.length === 0 ? (
-            <div className="text-center py-12 text-gray-400 dark:text-gray-500
-                            bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+            <div className="text-center py-12 text-muted-foreground
+                            bg-muted rounded-lg">
               <Sparkles className="w-8 h-8 mx-auto mb-3 opacity-50" />
               <p className="text-sm">暂无推荐的 Skills</p>
             </div>

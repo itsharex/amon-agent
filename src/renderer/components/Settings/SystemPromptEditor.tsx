@@ -24,13 +24,13 @@ const SystemPromptEditor: React.FC = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+        <label className="text-sm font-medium text-foreground">
           System Prompt
         </label>
         {!isEditing && (
           <button
             onClick={handleEdit}
-            className="text-xs text-primary-500 hover:text-primary-600"
+            className="text-xs text-primary hover:text-primary/80"
           >
             编辑
           </button>
@@ -45,11 +45,11 @@ const SystemPromptEditor: React.FC = () => {
             rows={6}
             className="
               w-full px-3 py-2
-              bg-gray-100 dark:bg-gray-700
-              border border-gray-200 dark:border-gray-600
+              bg-muted
+              border border-border
               rounded-lg text-sm
-              text-gray-700 dark:text-gray-200
-              focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+              text-foreground
+              focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
               resize-none
             "
             placeholder="输入系统提示词..."
@@ -57,21 +57,21 @@ const SystemPromptEditor: React.FC = () => {
           <div className="flex gap-2 justify-end">
             <button
               onClick={handleCancel}
-              className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent rounded-lg transition-colors"
             >
               取消
             </button>
             <button
               onClick={handleSave}
-              className="px-3 py-1.5 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors"
             >
               保存
             </button>
           </div>
         </div>
       ) : (
-        <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-          <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap line-clamp-4">
+        <div className="p-3 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
             {formData.agent.systemPrompt || '未设置'}
           </p>
         </div>

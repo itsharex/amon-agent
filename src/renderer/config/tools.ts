@@ -27,58 +27,58 @@ export const TOOL_DISPLAY_CONFIG: Record<string, ToolDisplayConfig> = {
   Read: {
     icon: React.createElement(FileText, { className: 'w-4 h-4' }),
     name: '读取文件',
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
   Write: {
     icon: React.createElement(Pencil, { className: 'w-4 h-4' }),
     name: '写入文件',
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
   },
   Edit: {
     icon: React.createElement(Edit, { className: 'w-4 h-4' }),
     name: '编辑文件',
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
   },
   Bash: {
     icon: React.createElement(Terminal, { className: 'w-4 h-4' }),
     name: '执行命令',
-    color: 'text-violet-600 dark:text-violet-400',
-    bgColor: 'bg-violet-50 dark:bg-violet-900/20',
+    color: 'text-thinking',
+    bgColor: 'bg-thinking/10',
   },
   Glob: {
     icon: React.createElement(Search, { className: 'w-4 h-4' }),
     name: '搜索文件',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   Grep: {
     icon: React.createElement(SearchCode, { className: 'w-4 h-4' }),
     name: '搜索内容',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   WebFetch: {
     icon: React.createElement(Globe, { className: 'w-4 h-4' }),
     name: '获取网页',
-    color: 'text-sky-600 dark:text-sky-400',
-    bgColor: 'bg-sky-50 dark:bg-sky-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
   WebSearch: {
     icon: React.createElement(Search, { className: 'w-4 h-4' }),
     name: '网络搜索',
-    color: 'text-sky-600 dark:text-sky-400',
-    bgColor: 'bg-sky-50 dark:bg-sky-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
 };
 
 export const DEFAULT_TOOL_CONFIG: ToolDisplayConfig = {
   icon: React.createElement(Settings, { className: 'w-4 h-4' }),
   name: '未知工具',
-  color: 'text-gray-600 dark:text-gray-400',
-  bgColor: 'bg-gray-50 dark:bg-gray-800',
+  color: 'text-muted-foreground',
+  bgColor: 'bg-muted',
 };
 
 /**

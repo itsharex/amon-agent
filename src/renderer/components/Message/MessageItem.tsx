@@ -61,7 +61,7 @@ const MessageFooter: React.FC<MessageFooterProps> = ({ message, isUser }) => {
       {showTokenUsage && message.tokenUsage && <TokenUsage usage={message.tokenUsage} />}
 
       {/* 时间戳 */}
-      <div className="text-[11px] text-gray-400 dark:text-gray-500">
+      <div className="text-[11px] text-muted-foreground">
         {formatTimestamp(message.timestamp)}
       </div>
     </div>

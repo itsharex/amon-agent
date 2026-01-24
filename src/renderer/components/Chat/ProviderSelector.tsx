@@ -43,8 +43,8 @@ const ProviderSelector: React.FC = () => {
           flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs border
           transition-colors duration-150
           ${isDisabled
-            ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed border-gray-200 dark:border-gray-700'
-            : 'text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+            ? 'text-muted-foreground cursor-not-allowed border-border'
+            : 'text-foreground border-border hover:bg-accent'
           }
         `}
         title={claudeCodeMode ? 'Claude Code 模式' : (providers.length === 0 ? '请在设置中配置 Provider' : '切换 Provider')}
@@ -58,8 +58,8 @@ const ProviderSelector: React.FC = () => {
 
       {/* 下拉菜单 */}
       {open && !claudeCodeMode && providers.length > 0 && (
-        <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-          <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+        <div className="absolute bottom-full left-0 mb-1 w-48 bg-popover rounded-lg shadow-lg border border-border py-1 z-50">
+          <div className="px-3 py-2 text-xs text-muted-foreground border-b border-border">
             选择 Provider
           </div>
           {providers.map((provider) => (
@@ -68,14 +68,14 @@ const ProviderSelector: React.FC = () => {
               onClick={() => handleProviderChange(provider.id)}
               className={`
                 w-full flex items-center gap-2 px-3 py-2 text-left text-sm
-                hover:bg-gray-50 dark:hover:bg-gray-700/50
-                ${activeProviderId === provider.id ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-200'}
+                hover:bg-accent
+                ${activeProviderId === provider.id ? 'bg-primary/10 text-primary' : 'text-foreground'}
               `}
             >
-              <Server className={`w-4 h-4 ${activeProviderId === provider.id ? 'text-primary-500' : 'text-gray-400'}`} />
+              <Server className={`w-4 h-4 ${activeProviderId === provider.id ? 'text-primary' : 'text-muted-foreground'}`} />
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{provider.name}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{provider.model}</div>
+                <div className="text-xs text-muted-foreground truncate">{provider.model}</div>
               </div>
             </button>
           ))}

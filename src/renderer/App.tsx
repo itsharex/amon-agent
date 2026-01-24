@@ -86,17 +86,17 @@ const App: React.FC = () => {
   // 加载状态
   if (settingsLoading || sessionsLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white dark:bg-gray-800">
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">加载中...</p>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">加载中...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex bg-sidebar-background dark:bg-dark-sidebar-background">
+    <div className="h-screen flex bg-sidebar-background">
       {/* 侧边栏 */}
       <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
 

@@ -25,18 +25,18 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
   return (
     <div className="space-y-6">
       {/* 当前 Provider */}
-      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <span>当前 Provider：</span>
           {activeProvider ? (
-            <span className="text-primary-600 dark:text-primary-400 font-medium">{activeProvider.name}</span>
+            <span className="text-primary font-medium">{activeProvider.name}</span>
           ) : (
-            <span className="text-amber-600 dark:text-amber-400">未配置</span>
+            <span className="text-warning">未配置</span>
           )}
         </div>
         <button
           onClick={onNavigateToProvider}
-          className="text-xs text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
+          className="text-xs text-primary hover:text-primary/80"
         >
           更改
         </button>
@@ -44,7 +44,7 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
 
       {/* 权限模式 */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">
+        <label className="block text-sm font-medium text-foreground mb-3">
           权限模式
         </label>
         <div className="grid grid-cols-4 gap-3">
@@ -59,8 +59,8 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
                 flex flex-col items-center gap-2 p-4 rounded-xl cursor-pointer
                 border-2 transition-all duration-150
                 ${(formData.agent.permissionMode || 'default') === mode.value
-                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                  : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-accent'}
               `}
             >
               {mode.icon}
@@ -75,12 +75,12 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
       <SystemPromptEditor />
 
       {/* Claude Code 模式 */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
         <div className="flex items-center gap-3">
-          <Terminal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <Terminal className="w-5 h-5 text-muted-foreground" />
           <div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-200">Claude Code 模式</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <h3 className="text-sm font-medium text-foreground">Claude Code 模式</h3>
+            <p className="text-xs text-muted-foreground">
               开启后继承 Claude Code 配置和系统提示词
             </p>
           </div>
@@ -93,8 +93,8 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
           className={`
             relative inline-flex h-6 w-11 items-center rounded-full transition-colors
             ${formData.agent.claudeCodeMode
-              ? 'bg-primary-500'
-              : 'bg-gray-300 dark:bg-gray-600'}
+              ? 'bg-primary'
+              : 'bg-muted-foreground/30'}
           `}
         >
           <span

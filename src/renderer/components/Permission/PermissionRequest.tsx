@@ -77,18 +77,18 @@ const PermissionRequest: React.FC<PermissionRequestProps> = ({ request }) => {
   const summary = getToolInputSummary(request.toolName, request.input);
 
   return (
-    <div className="my-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+    <div className="my-3 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       {/* 头部 */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <Shield className="w-4 h-4 text-amber-500" />
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">权限请求</span>
-        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">{countdown}s</span>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <Shield className="w-4 h-4 text-warning" />
+        <span className="text-sm font-medium text-foreground">权限请求</span>
+        <span className="text-xs text-muted-foreground ml-auto">{countdown}s</span>
       </div>
 
       {/* 工具信息 */}
       <div className="p-4">
         <div className={`flex items-start gap-3 p-3 rounded-lg ${config.bgColor}`}>
-          <div className={`p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm ${config.color}`}>
+          <div className={`p-2 rounded-lg bg-card shadow-sm ${config.color}`}>
             {config.icon}
           </div>
           <div className="flex-1 min-w-0">
@@ -96,7 +96,7 @@ const PermissionRequest: React.FC<PermissionRequestProps> = ({ request }) => {
               {config.name}
             </div>
             {summary && (
-              <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 font-mono break-all line-clamp-2">
+              <div className="mt-1 text-sm text-muted-foreground font-mono break-all line-clamp-2">
                 {summary}
               </div>
             )}
@@ -107,14 +107,14 @@ const PermissionRequest: React.FC<PermissionRequestProps> = ({ request }) => {
         <div className="mt-3">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {showDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             <span>查看详细参数</span>
           </button>
 
           {showDetails && (
-            <pre className="mt-2 text-xs font-mono text-gray-600 dark:text-gray-400 p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50 overflow-x-auto max-h-32 overflow-y-auto">
+            <pre className="mt-2 text-xs font-mono text-muted-foreground p-3 rounded-lg bg-muted overflow-x-auto max-h-32 overflow-y-auto">
               {JSON.stringify(request.input, null, 2)}
             </pre>
           )}
@@ -122,13 +122,13 @@ const PermissionRequest: React.FC<PermissionRequestProps> = ({ request }) => {
       </div>
 
       {/* 操作按钮 */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700">
+      <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-t border-border">
         <button
           onClick={handleDeny}
           className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium
-            text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-700
-            border border-gray-200 dark:border-gray-600 rounded-lg
-            hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            text-muted-foreground bg-card
+            border border-border rounded-lg
+            hover:bg-accent transition-colors"
         >
           <X className="w-4 h-4" />
           拒绝
@@ -136,8 +136,8 @@ const PermissionRequest: React.FC<PermissionRequestProps> = ({ request }) => {
         <button
           onClick={handleAllow}
           className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium
-            text-white bg-emerald-600 rounded-lg
-            hover:bg-emerald-700 transition-colors"
+            text-success-foreground bg-success rounded-lg
+            hover:bg-success/90 transition-colors"
         >
           <Check className="w-4 h-4" />
           允许

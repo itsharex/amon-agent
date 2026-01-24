@@ -69,11 +69,11 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
     <div className="space-y-3">
       {/* 问题标题 */}
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">
           {question.header}
         </span>
       </div>
-      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+      <p className="text-sm font-medium text-foreground">
         {question.question}
       </p>
 
@@ -87,8 +87,8 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
               onClick={() => handleOptionClick(option.label)}
               className={`w-full text-left p-3 rounded-lg border transition-colors ${
                 isSelected
-                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  ? 'border-info bg-info-muted'
+                  : 'border-border hover:border-border hover:bg-accent'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -97,18 +97,18 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
                     question.multiSelect ? 'rounded' : 'rounded-full'
                   } border-2 flex items-center justify-center ${
                     isSelected
-                      ? 'border-blue-500 bg-blue-500'
-                      : 'border-gray-300 dark:border-gray-500'
+                      ? 'border-info bg-info'
+                      : 'border-muted-foreground'
                   }`}
                 >
-                  {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                  {isSelected && <Check className="w-2.5 h-2.5 text-info-foreground" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  <div className="text-sm font-medium text-foreground">
                     {option.label}
                   </div>
                   {option.description && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {option.description}
                     </div>
                   )}
@@ -123,8 +123,8 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
           onClick={() => handleOptionClick('__other__')}
           className={`w-full text-left p-3 rounded-lg border transition-colors ${
             showOther
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-              : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              ? 'border-info bg-info-muted'
+              : 'border-border hover:border-border hover:bg-accent'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -133,13 +133,13 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
                 question.multiSelect ? 'rounded' : 'rounded-full'
               } border-2 flex items-center justify-center ${
                 showOther
-                  ? 'border-blue-500 bg-blue-500'
-                  : 'border-gray-300 dark:border-gray-500'
+                  ? 'border-info bg-info'
+                  : 'border-muted-foreground'
               }`}
             >
-              {showOther && <Check className="w-2.5 h-2.5 text-white" />}
+              {showOther && <Check className="w-2.5 h-2.5 text-info-foreground" />}
             </div>
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            <span className="text-sm font-medium text-foreground">
               Other
             </span>
           </div>
@@ -158,7 +158,7 @@ const QuestionItem: React.FC<QuestionItemProps> = ({
                 }
               }}
               placeholder="Enter your answer..."
-              className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-info"
               autoFocus
             />
           </div>
@@ -243,32 +243,32 @@ const AskUserQuestionRequest: React.FC<AskUserQuestionRequestProps> = ({ request
   };
 
   return (
-    <div className="my-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+    <div className="my-3 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       {/* 头部 */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <MessageCircleQuestion className="w-4 h-4 text-blue-500" />
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <MessageCircleQuestion className="w-4 h-4 text-info" />
+        <span className="text-sm font-medium text-foreground">
           Claude 需要您的输入
         </span>
-        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">{countdown}s</span>
+        <span className="text-xs text-muted-foreground ml-auto">{countdown}s</span>
       </div>
 
       {/* 问题列表 */}
       <div className="p-4 space-y-4">
         {request.questions.map((question, index) => (
-          <div key={index} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+          <div key={index} className="border-b border-border last:border-0 pb-4 last:pb-0">
             {request.questions.length > 1 && (
               <button
                 onClick={() => toggleQuestion(index)}
                 className="w-full flex items-center justify-between py-2 text-left"
               >
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                <span className="text-xs font-medium text-muted-foreground">
                   问题 {index + 1}/{request.questions.length}
                 </span>
                 {expandedQuestions.has(index) ? (
-                  <ChevronUp className="w-4 h-4 text-gray-400" />
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
                 )}
               </button>
             )}
@@ -286,13 +286,13 @@ const AskUserQuestionRequest: React.FC<AskUserQuestionRequestProps> = ({ request
       </div>
 
       {/* 操作按钮 */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700">
+      <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-t border-border">
         <button
           onClick={handleSkip}
           className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium
-            text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-700
-            border border-gray-200 dark:border-gray-600 rounded-lg
-            hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            text-muted-foreground bg-card
+            border border-border rounded-lg
+            hover:bg-accent transition-colors"
         >
           <X className="w-4 h-4" />
           跳过
@@ -303,8 +303,8 @@ const AskUserQuestionRequest: React.FC<AskUserQuestionRequestProps> = ({ request
           className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium
             rounded-lg transition-colors ${
               hasAnyAnswer
-                ? 'text-white bg-blue-600 hover:bg-blue-700'
-                : 'text-gray-400 bg-gray-200 dark:bg-gray-700 cursor-not-allowed'
+                ? 'text-info-foreground bg-info hover:bg-info/90'
+                : 'text-muted-foreground bg-muted cursor-not-allowed'
             }`}
         >
           <Check className="w-4 h-4" />

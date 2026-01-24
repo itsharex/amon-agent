@@ -47,10 +47,10 @@ const InputArea: React.FC = () => {
   const canSend = !!(input.trim() && currentSessionId && !isLoading);
 
   return (
-    <div className="bg-main-background dark:bg-dark-main-background px-4 pb-4">
+    <div className="bg-background px-4 pb-4">
       <div className="max-w-3xl mx-auto">
         {/* 输入框容器 */}
-        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+        <div className="rounded-2xl border border-border shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           {/* 上半部分：输入区域 */}
           <div className="p-3 pb-2">
             <textarea
@@ -64,8 +64,8 @@ const InputArea: React.FC = () => {
               className="
                 w-full py-2 px-2
                 bg-transparent border-0 resize-none
-                text-gray-900 dark:text-gray-100
-                placeholder:text-gray-400 dark:placeholder:text-gray-500
+                text-foreground
+                placeholder:text-muted-foreground
                 focus:outline-none focus:ring-0
                 disabled:opacity-50 disabled:cursor-not-allowed
                 max-h-32
@@ -81,7 +81,7 @@ const InputArea: React.FC = () => {
               {/* 附件按钮 */}
               <button
                 disabled
-                className="p-2 rounded-lg text-gray-400 dark:text-gray-500 opacity-50 cursor-not-allowed"
+                className="p-2 rounded-lg text-muted-foreground opacity-50 cursor-not-allowed"
                 title="附件 (开发中)"
               >
                 <Paperclip className="w-5 h-5" />
@@ -97,8 +97,8 @@ const InputArea: React.FC = () => {
                 onClick={handleInterrupt}
                 className="
                   w-9 h-9 flex items-center justify-center flex-shrink-0
-                  bg-gray-500 hover:bg-gray-600
-                  text-white rounded-full
+                  bg-muted-foreground hover:bg-muted-foreground/80
+                  text-background rounded-full
                   transition-colors
                 "
                 title="停止生成"
@@ -113,8 +113,8 @@ const InputArea: React.FC = () => {
                   w-9 h-9 flex items-center justify-center flex-shrink-0
                   rounded-full transition-colors border
                   ${canSend
-                    ? 'bg-primary-500 hover:bg-primary-600 text-white border-primary-500'
-                    : 'bg-primary-500/10 text-primary-500/40 border-primary-500/20 cursor-not-allowed'
+                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary'
+                    : 'bg-primary/10 text-primary/40 border-primary/20 cursor-not-allowed'
                   }
                 `}
                 title="发送消息"

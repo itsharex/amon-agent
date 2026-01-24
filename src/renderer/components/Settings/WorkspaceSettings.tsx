@@ -96,29 +96,29 @@ const WorkspaceSettings: React.FC = () => {
     <div className="space-y-6">
       {/* 系统默认工作空间 */}
       <div>
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3 block">
+        <label className="text-sm font-medium text-foreground mb-3 block">
           系统默认工作空间
         </label>
-        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50
-                        rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 p-3 bg-muted
+                        rounded-lg border border-border">
           <div className="flex-shrink-0">
-            <Home className="w-5 h-5 text-gray-400" />
+            <Home className="w-5 h-5 text-muted-foreground" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-700 dark:text-gray-200">
+              <span className="font-medium text-foreground">
                 默认目录
               </span>
               {!hasUserDefault && (
                 <span className="flex items-center gap-1 px-1.5 py-0.5 text-xs
-                               bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400
+                               bg-warning/20 text-warning
                                rounded">
                   <Star className="w-3 h-3" />
                   默认
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {DEFAULT_WORKSPACE_PATH}
             </p>
           </div>
@@ -127,8 +127,8 @@ const WorkspaceSettings: React.FC = () => {
             {hasUserDefault && (
               <button
                 onClick={handleSetSystemDefault}
-                className="p-1.5 text-gray-500 hover:text-amber-600
-                           hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded
+                className="p-1.5 text-muted-foreground hover:text-warning
+                           hover:bg-warning/10 rounded
                            transition-colors"
                 title="设为默认"
               >
@@ -137,8 +137,8 @@ const WorkspaceSettings: React.FC = () => {
             )}
             <button
               onClick={() => handleOpenInFinder(DEFAULT_WORKSPACE_PATH)}
-              className="p-1.5 text-gray-500 hover:text-blue-600
-                         hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded
+              className="p-1.5 text-muted-foreground hover:text-info
+                         hover:bg-info/10 rounded
                          transition-colors"
               title="打开目录"
             >
@@ -146,7 +146,7 @@ const WorkspaceSettings: React.FC = () => {
             </button>
           </div>
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           如果没有设置默认工作空间，新建会话将使用此目录
         </p>
       </div>
@@ -154,14 +154,14 @@ const WorkspaceSettings: React.FC = () => {
       {/* 用户工作空间列表 */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+          <label className="text-sm font-medium text-foreground">
             已保存的工作空间
           </label>
           <button
             onClick={handleAddWorkspace}
             className="flex items-center gap-2 px-3 py-1.5 text-sm
-                       bg-primary-500 text-white rounded-lg
-                       hover:bg-primary-600 transition-colors"
+                       bg-primary text-primary-foreground rounded-lg
+                       hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             添加
@@ -169,7 +169,7 @@ const WorkspaceSettings: React.FC = () => {
         </div>
 
         {workspaces.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+          <div className="text-center py-8 text-muted-foreground bg-muted rounded-lg">
             <Folder className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <p className="text-sm">暂无保存的工作空间</p>
             <p className="text-xs mt-1">点击上方按钮添加</p>
@@ -179,13 +179,13 @@ const WorkspaceSettings: React.FC = () => {
             {workspaces.map((workspace) => (
               <div
                 key={workspace.id}
-                className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50
-                           rounded-lg border border-gray-200 dark:border-gray-700
-                           hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                className="flex items-center gap-3 p-3 bg-muted
+                           rounded-lg border border-border
+                           hover:border-border transition-colors"
               >
                 {/* 图标 */}
                 <div className="flex-shrink-0">
-                  <FolderOpen className="w-5 h-5 text-primary-500" />
+                  <FolderOpen className="w-5 h-5 text-primary" />
                 </div>
 
                 {/* 名称和路径 */}
@@ -201,18 +201,18 @@ const WorkspaceSettings: React.FC = () => {
                           if (e.key === 'Escape') handleCancelRename();
                         }}
                         autoFocus
-                        className="flex-1 px-2 py-1 text-sm bg-white dark:bg-gray-700
-                                   border border-primary-500 rounded outline-none"
+                        className="flex-1 px-2 py-1 text-sm bg-background
+                                   border border-primary rounded outline-none"
                       />
                       <button
                         onClick={handleSaveRename}
-                        className="p-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+                        className="p-1 text-success hover:bg-success/10 rounded"
                       >
                         <Check className="w-4 h-4" />
                       </button>
                       <button
                         onClick={handleCancelRename}
-                        className="p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                        className="p-1 text-muted-foreground hover:bg-accent rounded"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -220,19 +220,19 @@ const WorkspaceSettings: React.FC = () => {
                   ) : (
                     <>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-700 dark:text-gray-200 truncate">
+                        <span className="font-medium text-foreground truncate">
                           {workspace.name}
                         </span>
                         {workspace.isDefault && (
                           <span className="flex items-center gap-1 px-1.5 py-0.5 text-xs
-                                         bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400
+                                         bg-warning/20 text-warning
                                          rounded">
                             <Star className="w-3 h-3" />
                             默认
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
                         {formatPathWithTilde(workspace.path)}
                       </p>
                     </>
@@ -245,8 +245,8 @@ const WorkspaceSettings: React.FC = () => {
                     {!workspace.isDefault && (
                       <button
                         onClick={() => handleSetDefault(workspace.id)}
-                        className="p-1.5 text-gray-500 hover:text-amber-600
-                                   hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded
+                        className="p-1.5 text-muted-foreground hover:text-warning
+                                   hover:bg-warning/10 rounded
                                    transition-colors"
                         title="设为默认"
                       >
@@ -255,8 +255,8 @@ const WorkspaceSettings: React.FC = () => {
                     )}
                     <button
                       onClick={() => handleOpenInFinder(workspace.path)}
-                      className="p-1.5 text-gray-500 hover:text-blue-600
-                                 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded
+                      className="p-1.5 text-muted-foreground hover:text-info
+                                 hover:bg-info/10 rounded
                                  transition-colors"
                       title="打开目录"
                     >
@@ -264,8 +264,8 @@ const WorkspaceSettings: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleStartRename(workspace)}
-                      className="p-1.5 text-gray-500 hover:text-primary-600
-                                 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded
+                      className="p-1.5 text-muted-foreground hover:text-primary
+                                 hover:bg-primary/10 rounded
                                  transition-colors"
                       title="重命名"
                     >
@@ -273,8 +273,8 @@ const WorkspaceSettings: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleDeleteWorkspace(workspace)}
-                      className="p-1.5 text-gray-500 hover:text-red-600
-                                 hover:bg-red-50 dark:hover:bg-red-900/20 rounded
+                      className="p-1.5 text-muted-foreground hover:text-destructive
+                                 hover:bg-destructive/10 rounded
                                  transition-colors"
                       title="删除"
                     >
@@ -289,7 +289,7 @@ const WorkspaceSettings: React.FC = () => {
       </div>
 
       {/* 说明文字 */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+      <div className="text-xs text-muted-foreground space-y-1">
         <p>工作空间用于指定 Agent 执行命令时的工作目录。</p>
         <p>新建会话时将使用默认工作空间。</p>
       </div>

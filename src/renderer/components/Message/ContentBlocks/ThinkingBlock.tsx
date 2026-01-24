@@ -22,7 +22,7 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
     <div className="mb-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+        className="flex items-center gap-2 text-sm text-thinking-foreground hover:text-thinking transition-colors"
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
         <span className="flex items-center gap-1.5">
@@ -37,8 +37,8 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
       </button>
 
       {(isExpanded || isStreaming) && (
-        <div className="mt-2 pl-6 border-l-2 border-purple-200 dark:border-purple-800">
-          <div className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed">
+        <div className="mt-2 pl-6 border-l-2 border-thinking-border">
+          <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
             {displayText}
             {shouldTruncate && !isExpanded && '...'}
           </div>
@@ -46,7 +46,7 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
       )}
 
       {!isExpanded && !isStreaming && content && (
-        <div className="mt-1 pl-6 text-xs text-gray-400 dark:text-gray-500 truncate max-w-md">
+        <div className="mt-1 pl-6 text-xs text-muted-foreground truncate max-w-md">
           {content.slice(0, 60)}...
         </div>
       )}
