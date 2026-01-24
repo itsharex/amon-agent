@@ -1,5 +1,9 @@
 import React, { memo } from 'react';
 import { Streamdown } from 'streamdown';
+import { code } from '@streamdown/code';
+import { math } from '@streamdown/math';
+import { mermaid } from '@streamdown/mermaid';
+import { cjk } from '@streamdown/cjk';
 
 export interface TextBlockProps {
   content: string;
@@ -9,7 +13,7 @@ export interface TextBlockProps {
 const TextBlock: React.FC<TextBlockProps> = memo(({ content, isStreaming }) => {
   return (
     <div className="markdown-content">
-      <Streamdown>{content}</Streamdown>
+      <Streamdown plugins={{ code, mermaid, math, cjk }}>{content}</Streamdown>
       {isStreaming && (
         <span className="inline-block w-2 h-4 bg-muted-foreground animate-pulse ml-0.5" />
       )}
