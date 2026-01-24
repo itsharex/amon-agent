@@ -18,15 +18,27 @@ type GroupedBlock =
   | { type: 'tool_group'; blocks: MessageContentBlock[] };
 
 /**
- * 将内容块分组：连续的 tool_call 归为一组
+ * 将内容块分组：连续的 tool_call 归为一组（Write/Edit 除外）
  */
 function groupContentBlocks(blocks: MessageContentBlock[]): GroupedBlock[] {
   const groups: GroupedBlock[] = [];
   let currentToolGroup: MessageContentBlock[] = [];
 
+  // 需要单独展示的工具
+  const standaloneTools = ['TodoWrite', 'Write', 'Edit'];
+
   blocks.forEach((block, index) => {
-    // 跳过 TodoWrite 工具调用（单独处理）
-    if (block.type === 'tool_call' && block.toolCall.name === 'TodoWrite') {
+    // 跳过需要单独展示的工具
+    if (block.type === 'tool_call' && standaloneTools.includes(block.toolCall.name)) {
+      // 先处理累积的工具组
+      if (currentToolGroup.length > 0) {
+        groups.push({ type: 'tool_group', blocks: [...currentToolGroup] });
+        currentToolGroup = [];
+      }
+      // Write/Edit 作为单独 block，TodoWrite 完全跳过（由 extractLatestTodos 处理）
+      if (block.toolCall.name !== 'TodoWrite') {
+        groups.push({ type: 'single', block, index });
+      }
       return;
     }
 
