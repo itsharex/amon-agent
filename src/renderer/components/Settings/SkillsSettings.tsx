@@ -453,22 +453,6 @@ const SkillsSettings: React.FC = () => {
       {/* 已安装 Tab */}
       {activeTab === 'installed' && (
         <div className="space-y-4">
-          {/* 头部 */}
-          <div className="flex items-center justify-end">
-            <button
-              onClick={loadInstalledSkills}
-              disabled={isLoadingInstalled}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm
-                         text-muted-foreground
-                         bg-muted rounded-lg
-                         hover:bg-accent transition-colors
-                         disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoadingInstalled ? 'animate-spin' : ''}`} />
-              刷新
-            </button>
-          </div>
-
           {/* Skills 列表 */}
           {isLoadingInstalled ? (
             <div className="flex flex-col items-center justify-center py-12">
@@ -505,23 +489,9 @@ const SkillsSettings: React.FC = () => {
       {activeTab === 'recommended' && (
         <div className="space-y-4">
           {/* 头部 */}
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              官方推荐的 Skills，点击安装按钮添加到您的系统或工作空间
-            </p>
-            <button
-              onClick={loadRecommendedSkills}
-              disabled={isLoadingRecommended}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm
-                         text-muted-foreground
-                         bg-muted rounded-lg
-                         hover:bg-accent transition-colors
-                         disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoadingRecommended ? 'animate-spin' : ''}`} />
-              刷新
-            </button>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            官方推荐的 Skills，点击安装按钮添加到您的系统或工作空间
+          </p>
 
           {/* 推荐 Skills 网格 */}
           {isLoadingRecommended ? (
