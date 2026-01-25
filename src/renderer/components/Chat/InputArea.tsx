@@ -23,6 +23,13 @@ const InputArea: React.FC = () => {
   // 当前会话是否正在加载
   const isLoading = isSessionLoading(currentSessionId);
 
+  // 自动聚焦输入框
+  useEffect(() => {
+    if (currentSessionId && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [currentSessionId]);
+
   // 自动调整文本框高度
   useEffect(() => {
     if (textareaRef.current) {
@@ -160,6 +167,9 @@ const InputArea: React.FC = () => {
     }
 
     await sendMessage(message, currentSessionId, undefined, attachedImages.length > 0 ? attachedImages : undefined);
+
+    // 发送后重新聚焦
+    textareaRef.current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
