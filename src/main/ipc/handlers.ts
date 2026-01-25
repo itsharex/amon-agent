@@ -245,8 +245,8 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   // ========== 窗口相关 ==========
 
   // 打开设置窗口
-  ipcMain.handle(IPC_CHANNELS.WINDOW_OPEN_SETTINGS, () => {
-    openSettingsWindow();
+  ipcMain.handle(IPC_CHANNELS.WINDOW_OPEN_SETTINGS, (_event, tab?: string) => {
+    openSettingsWindow(tab);
     return { success: true };
   });
 

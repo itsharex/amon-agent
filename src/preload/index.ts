@@ -308,8 +308,8 @@ const electronAPI = {
     /**
      * 打开设置窗口
      */
-    openSettings: (): Promise<{ success: boolean }> => {
-      return ipcRenderer.invoke(IPC_CHANNELS.WINDOW_OPEN_SETTINGS);
+    openSettings: (tab?: string): Promise<{ success: boolean }> => {
+      return ipcRenderer.invoke(IPC_CHANNELS.WINDOW_OPEN_SETTINGS, tab);
     },
 
     /**

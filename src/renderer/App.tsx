@@ -4,9 +4,11 @@ import { useSessionStore } from './store/sessionStore';
 import { useChatStore } from './store/chatStore';
 import Sidebar from './components/Sidebar/Sidebar';
 import ChatView from './components/Chat/ChatView';
+import Onboarding from './components/Onboarding/Onboarding';
+import { Toaster } from './components/ui/sonner';
 
 const App: React.FC = () => {
-  const { loadSettings, isLoading: settingsLoading } = useSettingsStore();
+  const { loadSettings, isLoading: settingsLoading, settings } = useSettingsStore();
   const { loadSessions, isLoading: sessionsLoading, currentSessionId } = useSessionStore();
   const { loadMessages, setLoadingStates } = useChatStore();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -95,6 +97,21 @@ const App: React.FC = () => {
     );
   }
 
+  // 派生状态：检查是否需要显示 onboarding
+  const needsOnboarding =
+    settings.agent.providers.length === 0 &&
+    !settings.agent.claudeCodeMode;
+
+  // 显示 onboarding（自动响应设置变化）
+  if (needsOnboarding) {
+    return (
+      <>
+        <Onboarding />
+        <Toaster position="top-center" />
+      </>
+    );
+  }
+
   return (
     <div className="h-screen flex bg-sidebar-background">
       {/* 侧边栏 */}
@@ -102,6 +119,9 @@ const App: React.FC = () => {
 
       {/* 聊天主区域 */}
       <ChatView sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} />
+
+      {/* Toast 通知 */}
+      <Toaster position="top-center" />
     </div>
   );
 };

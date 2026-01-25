@@ -245,10 +245,16 @@ const createWindow = () => {
 /**
  * 打开设置窗口
  */
-export function openSettingsWindow(): void {
-  // 如果窗口已存在，聚焦
+export function openSettingsWindow(tab?: string): void {
+  // 如果窗口已存在，聚焦并更新 hash
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.focus();
+    // 如果指定了 tab，更新 URL hash
+    if (tab) {
+      const currentURL = settingsWindow.webContents.getURL();
+      const newURL = currentURL.split('#')[0] + '#' + tab;
+      settingsWindow.loadURL(newURL);
+    }
     return;
   }
 
@@ -276,12 +282,14 @@ export function openSettingsWindow(): void {
     settingsWindow?.show();
   });
 
-  // 加载设置页面
+  // 加载设置页面，如果指定了 tab 则添加 hash
+  const hash = tab ? `#${tab}` : '';
   if (SETTINGS_WINDOW_VITE_DEV_SERVER_URL) {
-    settingsWindow.loadURL(`${SETTINGS_WINDOW_VITE_DEV_SERVER_URL}/settings.html`);
+    settingsWindow.loadURL(`${SETTINGS_WINDOW_VITE_DEV_SERVER_URL}/settings.html${hash}`);
   } else {
     settingsWindow.loadFile(
       path.join(__dirname, `../renderer/${SETTINGS_WINDOW_VITE_NAME}/settings.html`),
+      { hash: tab || '' }
     );
   }
 

@@ -13,7 +13,15 @@ type SettingsTab = 'general' | 'provider' | 'workspace' | 'agent' | 'shortcuts' 
 
 const SettingsWindow: React.FC = () => {
   const { saveSettings, saveError, isSaving, loadSettings, hasChanges } = useSettingsStore();
-  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+
+  // 从 URL hash 读取初始 tab，如果没有则默认为 'general'
+  const getInitialTab = (): SettingsTab => {
+    const hash = window.location.hash.slice(1); // 移除 # 符号
+    const validTabs: SettingsTab[] = ['general', 'provider', 'workspace', 'agent', 'shortcuts', 'skills', 'about'];
+    return validTabs.includes(hash as SettingsTab) ? (hash as SettingsTab) : 'general';
+  };
+
+  const [activeTab, setActiveTab] = useState<SettingsTab>(getInitialTab());
 
   useEffect(() => {
     loadSettings();
