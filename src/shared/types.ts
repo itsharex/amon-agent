@@ -7,6 +7,24 @@ export { DEFAULT_SETTINGS, DEFAULT_SHORTCUTS, DEFAULT_AGENT_SETTINGS } from './s
 // 导入 PermissionMode 用于本地类型定义
 import type { PermissionMode } from './schemas';
 
+// ==================== 图片附件类型 ====================
+
+/**
+ * 支持的图片 MIME 类型
+ */
+export type ImageMimeType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+
+/**
+ * 图片附件
+ */
+export interface ImageAttachment {
+  id: string;
+  filename: string;
+  mimeType: ImageMimeType;
+  base64Data: string;  // 不含 data:xxx;base64, 前缀
+  size: number;        // 文件大小（字节）
+}
+
 // ==================== 会话相关类型 ====================
 
 export interface Session {
@@ -53,6 +71,7 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string; // 保留用于用户消息和向后兼容
   contentBlocks?: MessageContentBlock[]; // 助手消息的有序内容块
+  images?: ImageAttachment[]; // 用户消息附带的图片
   timestamp: string;
   isStreaming?: boolean;
   tokenUsage?: TokenUsage; // Token 用量信息
@@ -319,4 +338,5 @@ export interface MessageParams {
   sessionId: string;
   sdkSessionId?: string;
   options?: MessageOptions;
+  images?: ImageAttachment[];
 }

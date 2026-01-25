@@ -38,6 +38,8 @@ export type {
   MessageOptions,
   SettingsSetResult,
   MessageCompleteData,
+  ImageAttachment,
+  ImageMimeType,
 } from '../../shared/types';
 
 // 导出常量
@@ -56,11 +58,12 @@ import type {
   MessageOptions,
   SettingsSetResult,
   MessageCompleteData,
+  ImageAttachment,
 } from '../../shared/types';
 
 export interface ElectronAPI {
   agent: {
-    sendMessage: (prompt: string, sessionId: string, options?: MessageOptions) => Promise<{ success: boolean; error?: string }>;
+    sendMessage: (prompt: string, sessionId: string, options?: MessageOptions, images?: ImageAttachment[]) => Promise<{ success: boolean; error?: string }>;
     interrupt: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
     onMessagesUpdated: (callback: (data: { sessionId: string; messages: Message[] }) => void) => void;
     offMessagesUpdated: (callback: (data: { sessionId: string; messages: Message[] }) => void) => void;
@@ -105,6 +108,7 @@ export interface ElectronAPI {
   };
   dialog: {
     selectFolder: () => Promise<{ success: boolean; path: string | null }>;
+    selectImages: () => Promise<{ success: boolean; images: ImageAttachment[] }>;
     confirm: (options: { title: string; message: string; detail?: string }) => Promise<{ confirmed: boolean }>;
   };
   shortcuts: {

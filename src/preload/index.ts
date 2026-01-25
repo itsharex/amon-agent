@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../shared/ipc';
-import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, MessageCompleteData } from '../shared/types';
+import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, MessageCompleteData, ImageAttachment } from '../shared/types';
 
 // 推送事件回调类型
 type MessagesUpdatedCallback = (data: { sessionId: string; messages: Message[] }) => void;
@@ -94,9 +94,10 @@ const electronAPI = {
     sendMessage: (
       prompt: string,
       sessionId: string,
-      options?: MessageOptions
+      options?: MessageOptions,
+      images?: ImageAttachment[]
     ): Promise<{ success: boolean; error?: string }> => {
-      return ipcRenderer.invoke(IPC_CHANNELS.AGENT_SEND_MESSAGE, { prompt, sessionId, options });
+      return ipcRenderer.invoke(IPC_CHANNELS.AGENT_SEND_MESSAGE, { prompt, sessionId, options, images });
     },
 
     /**
@@ -350,6 +351,13 @@ const electronAPI = {
      */
     selectFolder: (): Promise<{ success: boolean; path: string | null }> => {
       return ipcRenderer.invoke(IPC_CHANNELS.DIALOG_SELECT_FOLDER);
+    },
+
+    /**
+     * 选择图片文件
+     */
+    selectImages: (): Promise<{ success: boolean; images: ImageAttachment[] }> => {
+      return ipcRenderer.invoke(IPC_CHANNELS.DIALOG_SELECT_IMAGES);
     },
 
     /**

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Message, MessageOptions, PermissionMode } from '../types';
+import { Message, MessageOptions, PermissionMode, ImageAttachment } from '../types';
 
 interface ChatState {
   // 按会话缓存消息（来自主进程推送）
@@ -27,7 +27,7 @@ interface ChatState {
   clearSessionCache: (sessionId: string) => void;
 
   // 发送到主进程
-  sendMessage: (content: string, sessionId: string, options?: MessageOptions) => Promise<void>;
+  sendMessage: (content: string, sessionId: string, options?: MessageOptions, images?: ImageAttachment[]) => Promise<void>;
   interruptMessage: (sessionId: string) => Promise<void>;
   loadMessages: (sessionId: string) => Promise<void>;
 }
@@ -104,7 +104,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       };
     }),
 
-  sendMessage: async (content, sessionId, options) => {
+  sendMessage: async (content, sessionId, options, images) => {
     try {
       // 清除之前的错误
       set((state) => ({
@@ -117,7 +117,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         ? { ...options, permissionMode: options?.permissionMode ?? sessionMode }
         : undefined;
 
-      await window.electronAPI.agent.sendMessage(content, sessionId, mergedOptions);
+      await window.electronAPI.agent.sendMessage(content, sessionId, mergedOptions, images);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       set((state) => ({

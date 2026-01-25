@@ -2,7 +2,7 @@ import { query, type Options } from '@anthropic-ai/claude-agent-sdk';
 import { execSync } from 'child_process';
 import { v4 as uuidv4 } from 'uuid';
 import { homedir } from 'os';
-import { SDKMessage, Message, AskUserQuestionInput, MessageParams, PermissionResult, MessageOptions } from '../../shared/types';
+import { SDKMessage, Message, AskUserQuestionInput, MessageParams, PermissionResult, MessageOptions, ImageAttachment } from '../../shared/types';
 import { Settings } from '../../shared/schemas';
 import { DEFAULT_MAX_THINKING_TOKENS, COMMAND_TIMEOUT_MS } from '../../shared/constants';
 import { getSettings } from '../store/configStore';
@@ -167,12 +167,13 @@ function setTitleFromFirstMessage(sessionId: string, prompt: string): void {
  * 初始化查询消息
  * 创建用户消息和助手消息占位符
  */
-function initializeMessages(sessionId: string, prompt: string): string {
+function initializeMessages(sessionId: string, prompt: string, images?: ImageAttachment[]): string {
   // 添加用户消息
   const userMessage: Message = {
     id: uuidv4(),
     role: 'user',
     content: prompt,
+    images, // 保存图片到用户消息
     timestamp: new Date().toISOString(),
   };
   sessionStore.addMessage(sessionId, userMessage);
@@ -268,9 +269,9 @@ async function handleMessageComplete(
  * 发送消息到 Agent
  */
 export async function sendMessage(params: MessageParams): Promise<void> {
-  const { prompt, sessionId, sdkSessionId, options } = params;
+  const { prompt, sessionId, sdkSessionId, options, images } = params;
 
-  log.info('Message started', { promptLength: prompt.length, sdkSessionId: !!sdkSessionId, options }, sessionId);
+  log.info('Message started', { promptLength: prompt.length, imageCount: images?.length ?? 0, sdkSessionId: !!sdkSessionId, options }, sessionId);
 
   // 中断已有消息处理
   if (activeMessages.has(sessionId)) {
@@ -287,7 +288,7 @@ export async function sendMessage(params: MessageParams): Promise<void> {
   const workspace = session?.workspace || DEFAULT_WORKSPACE;
 
   // 初始化消息
-  const messageId = initializeMessages(sessionId, prompt);
+  const messageId = initializeMessages(sessionId, prompt, images);
   const ctx: SendMessageContext = { sessionId, messageId, abortController, workspace, settings };
 
   // 设置消息状态
@@ -343,7 +344,52 @@ export async function sendMessage(params: MessageParams): Promise<void> {
     }
 
     // 创建并注册消息实例
-    const queryInstance = query({ prompt, options: queryOptions });
+    // 构建 prompt：如果有图片，使用多模态格式
+    let queryPrompt: string | Parameters<typeof query>[0]['prompt'];
+
+    if (images && images.length > 0) {
+      // 构建多模态内容数组
+      const contentBlocks: Array<
+        | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
+        | { type: 'text'; text: string }
+      > = [];
+
+      // 先添加图片（Claude 建议图片放在文本前面）
+      for (const img of images) {
+        contentBlocks.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: img.mimeType,
+            data: img.base64Data,
+          },
+        });
+      }
+
+      // 再添加文本
+      if (prompt) {
+        contentBlocks.push({
+          type: 'text',
+          text: prompt,
+        });
+      }
+
+      // 使用 AsyncIterable 格式传递多模态消息
+      queryPrompt = (async function* () {
+        yield {
+          type: 'user' as const,
+          session_id: sessionId,
+          message: {
+            role: 'user' as const,
+            content: contentBlocks,
+          },
+        };
+      })();
+    } else {
+      queryPrompt = prompt;
+    }
+
+    const queryInstance = query({ prompt: queryPrompt, options: queryOptions });
     activeMessages.set(sessionId, queryInstance);
 
     log.info('Message instance created, processing stream', undefined, sessionId);

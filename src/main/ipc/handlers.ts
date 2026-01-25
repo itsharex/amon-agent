@@ -1,9 +1,10 @@
 import { ipcMain, BrowserWindow, shell, dialog, app } from 'electron';
 import os from 'os';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import path from 'path';
+import { promises as fs } from 'fs';
+import { v4 as uuidv4 } from 'uuid';
 import { IPC_CHANNELS } from '../../shared/ipc';
-import { Settings, Message, PermissionResult, ToolPermissionRequest, AskUserQuestionRequest, Session, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult } from '../../shared/types';
+import { Settings, Message, PermissionResult, ToolPermissionRequest, AskUserQuestionRequest, Session, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, ImageAttachment, ImageMimeType } from '../../shared/types';
 import { sendMessage, interruptMessage } from '../agent/agentService';
 import { sessionStore } from '../store/sessionStore';
 import { permissionManager } from '../agent/permissionManager';
@@ -23,9 +24,9 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
   // 发送消息
   ipcMain.handle(
     IPC_CHANNELS.AGENT_SEND_MESSAGE,
-    async (_event, params: { prompt: string; sessionId: string; options?: MessageOptions }) => {
+    async (_event, params: { prompt: string; sessionId: string; options?: MessageOptions; images?: ImageAttachment[] }) => {
       try {
-        log.info('IPC: Agent sendMessage received', { promptLength: params.prompt.length }, params.sessionId);
+        log.info('IPC: Agent sendMessage received', { promptLength: params.prompt.length, imageCount: params.images?.length ?? 0 }, params.sessionId);
         // 获取 SDK session ID
         const sdkSessionId = sessionStore.getSdkSessionId(params.sessionId);
         await sendMessage({
@@ -33,6 +34,7 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
           sessionId: params.sessionId,
           sdkSessionId,
           options: params.options,
+          images: params.images,
         });
         return { success: true };
       } catch (error) {
@@ -332,6 +334,66 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
       });
 
       return { confirmed: result.response === 1 };
+    }
+  );
+
+  // 选择图片文件
+  ipcMain.handle(
+    IPC_CHANNELS.DIALOG_SELECT_IMAGES,
+    async (): Promise<{ success: boolean; images: ImageAttachment[] }> => {
+      const result = await dialog.showOpenDialog({
+        properties: ['openFile', 'multiSelections'],
+        filters: [
+          { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'] }
+        ],
+        title: '选择图片',
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: true, images: [] };
+      }
+
+      // 读取文件并转换为 base64
+      const images: ImageAttachment[] = [];
+      const maxSize = 5 * 1024 * 1024; // 5MB 限制
+
+      for (const filePath of result.filePaths) {
+        try {
+          const buffer = await fs.readFile(filePath);
+
+          // 检查文件大小
+          if (buffer.length > maxSize) {
+            log.warn('IPC: Image file too large, skipping', { filePath, size: buffer.length });
+            continue;
+          }
+
+          const filename = path.basename(filePath);
+          const ext = path.extname(filePath).toLowerCase().slice(1);
+          const mimeType: ImageMimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}` as ImageMimeType;
+          const base64Data = buffer.toString('base64');
+
+          log.info('IPC: Image loaded', {
+            filename,
+            mimeType,
+            size: buffer.length,
+            base64Length: base64Data.length,
+            base64Preview: base64Data.substring(0, 50),
+          });
+
+          images.push({
+            id: uuidv4(),
+            filename,
+            mimeType,
+            base64Data,
+            size: buffer.length,
+          });
+        } catch (error) {
+          log.error('IPC: Failed to read image file', error instanceof Error ? { message: error.message, filePath } : { filePath });
+        }
+      }
+
+      log.info('IPC: Returning images', { count: images.length });
+      return { success: true, images };
     }
   );
 

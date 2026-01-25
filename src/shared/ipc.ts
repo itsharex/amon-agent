@@ -21,6 +21,7 @@ export const IPC_CHANNELS = {
 
   // 对话框相关
   DIALOG_SELECT_FOLDER: 'dialog:selectFolder',
+  DIALOG_SELECT_IMAGES: 'dialog:selectImages',
   DIALOG_CONFIRM: 'dialog:confirm',
 
   // 设置相关
