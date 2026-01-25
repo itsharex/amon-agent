@@ -12,7 +12,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message }) => {
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   return (
-    <div className="px-4 py-3 bg-user-bubble text-user-bubble-foreground rounded-2xl rounded-br-md text-[15px] leading-relaxed">
+    <div className="px-4 py-3 bg-user-bubble text-user-bubble-foreground rounded-2xl rounded-br-md text-[15px] leading-relaxed overflow-hidden">
       {/* 图片预览 */}
       {message.images && message.images.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
@@ -30,7 +30,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message }) => {
 
       {/* 文本内容 */}
       {message.content && (
-        <div className="whitespace-pre-wrap">{message.content}</div>
+        <div className="whitespace-pre-wrap break-words">{message.content}</div>
       )}
 
       {/* 图片放大查看模态框 */}
