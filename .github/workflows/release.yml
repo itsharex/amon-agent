@@ -40,9 +40,9 @@ jobs:
           # 发布到 GitHub Releases
           publish: bun run release
           # PR 标题
-          title: "chore: version packages"
+          title: "[CI]: Release Packages"
           # PR 提交信息
-          commit: "chore: version packages"
+          commit: "[CI]: Release packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

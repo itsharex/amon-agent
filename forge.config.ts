@@ -58,6 +58,7 @@ const config: ForgeConfig = {
       },
       prerelease: false,
       draft: true, // 先创建为 Draft，手动检查后再发布
+      generateReleaseNotes: true,
     }),
   ],
   hooks: {
