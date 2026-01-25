@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronRight, Lightbulb } from 'lucide-react';
+import { Streamdown } from 'streamdown';
+import { code } from '@streamdown/code';
+import { math } from '@streamdown/math';
+import { cjk } from '@streamdown/cjk';
 
 export interface ThinkingBlockProps {
   content: string;
@@ -15,8 +19,7 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
   if (!content) return null;
 
   const previewLength = 100;
-  const shouldTruncate = content.length > previewLength && !isStreaming;
-  const displayText = isExpanded || isStreaming ? content : content.slice(0, previewLength);
+  const previewText = content.slice(0, previewLength);
 
   return (
     <div className="mb-3">
@@ -38,16 +41,18 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
 
       {(isExpanded || isStreaming) && (
         <div className="mt-2 pl-6 border-l-2 border-thinking-border">
-          <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-            {displayText}
-            {shouldTruncate && !isExpanded && '...'}
+          <div className="text-sm text-muted-foreground markdown-content thinking-content">
+            <Streamdown plugins={{ code, math, cjk }}>{content}</Streamdown>
+            {isStreaming && (
+              <span className="inline-block w-2 h-4 bg-muted-foreground animate-pulse ml-0.5" />
+            )}
           </div>
         </div>
       )}
 
       {!isExpanded && !isStreaming && content && (
         <div className="mt-1 pl-6 text-xs text-muted-foreground truncate max-w-md">
-          {content.slice(0, 60)}...
+          {previewText}...
         </div>
       )}
     </div>
