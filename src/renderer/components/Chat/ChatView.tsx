@@ -29,9 +29,10 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
   // 检查是否有消息（对话已开始）
   const hasMessages = messages.length > 0;
 
-  // 切换会话时关闭工作空间选择器
+  // 切换会话时重置状态
   useEffect(() => {
     setShowWorkspaceSelector(false);
+    setIsNearBottom(true);
   }, [currentSessionId]);
 
   const workspaceDisplay = useMemo(
