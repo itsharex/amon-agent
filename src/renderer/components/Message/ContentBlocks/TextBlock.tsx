@@ -14,9 +14,6 @@ const TextBlock: React.FC<TextBlockProps> = memo(({ content, isStreaming }) => {
   return (
     <div className="markdown-content">
       <Streamdown plugins={{ code, mermaid, math, cjk }}>{content}</Streamdown>
-      {isStreaming && (
-        <span className="inline-block w-2 h-4 bg-muted-foreground animate-pulse ml-0.5" />
-      )}
     </div>
   );
 });

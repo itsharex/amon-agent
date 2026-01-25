@@ -3,6 +3,7 @@ import { Message, MessageContentBlock } from '../../types';
 import ContentBlockRenderer from './ContentBlocks';
 import ToolGroup from './ToolGroup';
 import TodoList, { TodoItem } from './TodoList';
+import { Shimmer } from '../ai-elements/shimmer';
 
 export interface AssistantMessageProps {
   message: Message;
@@ -134,18 +135,29 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, defaultCol
           <TodoList todos={latestTodos} />
         </div>
       )}
+
+      {/* 统一的流式指示器 - 显示在消息最底部，只有当有内容时才显示 */}
+      {isStreaming && hasContent && (
+        <div className="mt-3 flex items-center gap-2">
+          <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse" />
+          <span className="text-sm font-medium text-primary/80 animate-pulse">
+            工作中...
+          </span>
+        </div>
+      )}
     </div>
   );
 };
 
 /**
- * 加载动画组件
+ * 加载动画组件 - 思考中状态
  */
 const LoadingIndicator: React.FC = () => (
-  <div className="flex items-center gap-1.5 py-1">
-    <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-    <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-    <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+  <div className="flex items-center gap-2">
+    <span className="inline-block w-2 h-2 bg-thinking rounded-full animate-pulse" />
+    <span className="text-sm font-medium text-thinking-foreground animate-pulse">
+      思考中...
+    </span>
   </div>
 );
 

@@ -13,8 +13,8 @@ export interface ThinkingBlockProps {
 }
 
 const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, defaultCollapsed = false }) => {
-  // When streaming, always expand; otherwise use defaultCollapsed setting
-  const [isExpanded, setIsExpanded] = useState(isStreaming ? true : !defaultCollapsed);
+  // Allow manual collapse/expand even during streaming
+  const [isExpanded, setIsExpanded] = useState(!defaultCollapsed);
 
   if (!content) return null;
 
@@ -39,18 +39,15 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
         </span>
       </button>
 
-      {(isExpanded || isStreaming) && (
+      {isExpanded && (
         <div className="mt-2 pl-6 border-l-2 border-thinking-border">
           <div className="text-sm text-muted-foreground markdown-content thinking-content">
             <Streamdown plugins={{ code, math, cjk }}>{content}</Streamdown>
-            {isStreaming && (
-              <span className="inline-block w-2 h-4 bg-muted-foreground animate-pulse ml-0.5" />
-            )}
           </div>
         </div>
       )}
 
-      {!isExpanded && !isStreaming && content && (
+      {!isExpanded && content && (
         <div className="mt-1 pl-6 text-xs text-muted-foreground truncate max-w-md">
           {previewText}...
         </div>
