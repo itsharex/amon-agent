@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 
+Always use Chinese when responding to me.
+
 ## Project Overview
 
 Amon (amon-agent) is a desktop chat application built with Electron + React + TypeScript that integrates with Anthropic's Claude AI through the Claude Agent SDK.
