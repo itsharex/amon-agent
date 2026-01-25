@@ -10,21 +10,67 @@
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript"></a>
   <a href="https://github.com/anthropics/claude-code"><img src="https://img.shields.io/badge/Claude-Agent%20SDK-CC785C?logo=anthropic&logoColor=white" alt="Claude"></a>
-
-  <img src="./screenshots/example.png#gh-light-mode-only" alt="Amon Screenshot" width="600" />
-  <img src="./screenshots/example-dark.png#gh-dark-mode-only" alt="Amon Screenshot" width="600" />
 </div>
 
 ## 关于 Amon
 
 Amon 是运行在本地的智能 AI Coworker，基于 [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) 构建。它不仅能与你对话，还能真正帮你完成工作：编写代码、执行命令、搜索信息、管理文件。
 
-### ✨ 核心特性
 
-- **🤖 真正的工作伙伴** — 能执行任务、操作文件、运行代码的智能助手，而非简单的对话机器人
-- **🔒 本地优先** — 数据存储在本地，保护隐私和安全
-- **🧩 可扩展** — 通过 Skills 系统扩展功能，适应不同工作场景
-- **🎨 可视化界面** — 为 Claude Code 提供友好的图形界面体验
+## 功能速览
+
+我们来看看截图预览 Amon 的功能。
+
+![思考/工具调用](./screenshots/img1.png)
+
+Amon 可以根据你发送的消息，进行思考，执行工具调用，完成你的任务。
+
+![计划模式](./screenshots/img2.jpg)
+
+Amon 拥有计划模式，可以先创建任务 TODO，然后按计划执行。
+
+![深色主题](./screenshots/img3.jpg)
+
+Amon 拥有深色/浅色主题模式。
+
+![文件修改 diff](./screenshots/img4.jpg)
+
+Amon 可以展示文件修改 diff 内容。
+
+![发送图片](./screenshots/img5.png)
+
+Amon 支持发送图片消息。
+
+![自定义多供应商](./screenshots/img6.png)
+
+Amon 可以自定义添加多个 API 供应商。注意：目前只支持 Claude API 兼容格式的 API。
+
+![智能体配置](./screenshots/img7.png)
+
+Amon 可以设置 Agent 的执行权限，有不同级别的权限模式。
+
+可以自定义系统提示词。
+
+如果你已安装 Claude Code 并配置了 API Key，可以开启 `Claude Code 模式`以获得更强的代码能力。
+
+开启 Claude Code 模式后，Amon 将使用 Claude Code 的全局设置，并使用 Claude Code 的系统提示词，会默认加载全局的 Skills 等等。
+
+开启后，你可以把 Amon 当做 Claude Code 的一个可视化客户端来使用。
+
+![工作空间](./screenshots/img8.png)
+
+Amon 以工作空间（文件夹）为单位来进行工作，你可以设置多个工作空间。默认工作空间：`~/.amon/workspaces`
+
+![Skills](./screenshots/img9.png)
+
+Amon 支持 Agent Skills，你可以通过安装 Skills 为 Amon 添加专业能力。
+
+目前内置了一些推荐技能，包括：
+- PDF 工具 — 文本提取、表单填写、文档合并
+- 前端设计 — 创建精美的 Web 界面和组件
+- 算法艺术 — 使用 p5.js 生成创意艺术作品
+- MCP 构建 — 开发 MCP 服务器
+
 
 ## 快速开始
 
@@ -70,50 +116,6 @@ Amon 提供两种使用模式，根据你的需求选择：
 | 工具权限 | Amon 权限设置 | Claude Code 权限设置 |
 | 适用场景 | 通用对话和任务 | 代码开发和工程任务 |
 
-## 核心能力
-
-### 🤖 完整的工具集
-
-- **💻 代码协作** — 阅读、编写、重构代码，理解项目结构
-- **📝 文件管理** — 创建、编辑、组织文件和文档
-- **⚡ 命令执行** — 运行 Bash 命令、安装依赖、执行脚本
-- **🔍 信息检索** — Web 搜索、查询文档、获取最新信息
-- **📋 任务规划** — 自主分解复杂任务，逐步执行
-- **🎨 技能扩展** — 通过 Skills 添加专业能力（PDF 处理、前端设计、算法艺术等）
-
-### 🔐 灵活的权限控制
-
-| 模式 | 说明 | 适用场景 |
-|------|------|---------|
-| **默认模式** | 每次操作需确认 | 探索性任务 |
-| **自动编辑** | 自动批准文件编辑，其他需确认 | 日常开发，平衡效率与安全 |
-| **不询问模式** | 拒绝未预先允许的工具调用 | 受限环境 |
-| **绕过权限** | 完全自动化执行 | 信任的重复任务 |
-
-### 💡 友好的桌面体验
-
-- **流式响应** — 实时查看 AI 思考过程和执行进度
-- **多工作空间** — 同时管理多个项目和对话会话
-- **主题适配** — 自动适应系统深色/浅色模式
-- **本地存储** — 所有数据保存在本地，保护隐私
-
-### 🧩 Skills 扩展系统
-
-通过 Skills 为 Amon 添加专业能力。内置技能包括：
-
-- **PDF 工具** — 文本提取、表单填写、文档合并
-- **前端设计** — 创建精美的 Web 界面和组件
-- **算法艺术** — 使用 p5.js 生成创意艺术作品
-- **MCP 构建** — 开发 Model Context Protocol 服务器
-
-**Skills 位置**：
-
-```
-~/.claude/skills/<skill-name>/SKILL.md         # 系统级 Skills
-<project>/.claude/skills/<skill-name>/SKILL.md # 项目级 Skills
-```
-
-> 💡 **提示**：开启 Claude Code 模式后，Amon 会自动加载 Claude Code 中已安装的所有 Skills，无需重复安装。
 
 ## 开发指南
 
