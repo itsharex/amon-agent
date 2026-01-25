@@ -44,6 +44,10 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
     messageListRef.current?.scrollToBottom();
   }, []);
 
+  const handleMessageSent = useCallback(() => {
+    messageListRef.current?.enableAutoScroll();
+  }, []);
+
   const handleCreateSession = async () => {
     await createSession();
   };
@@ -173,7 +177,7 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
       )}
 
       {/* 输入区域 */}
-      <InputArea />
+      <InputArea onMessageSent={handleMessageSent} />
     </div>
   );
 };

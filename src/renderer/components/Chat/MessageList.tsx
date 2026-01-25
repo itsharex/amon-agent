@@ -8,6 +8,7 @@ import AskUserQuestionRequest from '../Permission/AskUserQuestionRequest';
 
 export interface MessageListRef {
   scrollToBottom: () => void;
+  enableAutoScroll: () => void;
 }
 
 interface MessageListProps {
@@ -26,6 +27,10 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
   const prevSessionIdRef = useRef<string | null>(null);
   // 跟踪是否应该自动滚动
   const shouldAutoScrollRef = useRef(true);
+  // 跟踪上一次滚动位置，用于判断滚动方向
+  const lastScrollTopRef = useRef(0);
+  // 标记是否是程序触发的滚动
+  const isProgrammaticScrollRef = useRef(false);
 
   // 获取待处理的请求
   const pendingRequest = currentSessionId ? getPendingRequest(currentSessionId) : null;
@@ -46,6 +51,10 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
   // 暴露方法给父组件
   useImperativeHandle(ref, () => ({
     scrollToBottom: () => scrollToBottom(false),
+    enableAutoScroll: () => {
+      shouldAutoScrollRef.current = true;
+      scrollToBottom(true);
+    },
   }));
 
   // 检查是否接近底部
@@ -60,11 +69,27 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
 
   // 处理滚动事件
   const handleScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const currentScrollTop = container.scrollTop;
     const isNear = checkNearBottom();
+
+    // 通知父组件
     onNearBottom?.(isNear);
-    
-    // 更新自动滚动状态：如果用户滚动到底部附近，恢复自动滚动
-    shouldAutoScrollRef.current = isNear;
+
+    // 只有用户主动向上滚动时才关闭自动滚动
+    // 排除程序触发的滚动和向下滚动
+    if (!isProgrammaticScrollRef.current && currentScrollTop < lastScrollTopRef.current) {
+      // 用户向上滚动，关闭自动滚动
+      shouldAutoScrollRef.current = false;
+    } else if (isNear) {
+      // 用户滚动到底部附近，恢复自动滚动
+      shouldAutoScrollRef.current = true;
+    }
+
+    lastScrollTopRef.current = currentScrollTop;
+    isProgrammaticScrollRef.current = false;
   }, [checkNearBottom, onNearBottom]);
 
   // 会话切换时立即滚动到底部
@@ -85,6 +110,7 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
     
     const doScroll = () => {
       if (shouldAutoScrollRef.current) {
+        isProgrammaticScrollRef.current = true;
         container.scrollTop = container.scrollHeight;
       }
       rafId = null;

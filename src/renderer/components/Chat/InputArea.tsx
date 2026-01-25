@@ -11,7 +11,11 @@ const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 // 生成简单的唯一 ID
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-const InputArea: React.FC = () => {
+interface InputAreaProps {
+  onMessageSent?: () => void;
+}
+
+const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
   const [input, setInput] = useState('');
   const [images, setImages] = useState<ImageAttachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -165,6 +169,9 @@ const InputArea: React.FC = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
+
+    // 发送前滚动到底部
+    onMessageSent?.();
 
     await sendMessage(message, currentSessionId, undefined, attachedImages.length > 0 ? attachedImages : undefined);
 
