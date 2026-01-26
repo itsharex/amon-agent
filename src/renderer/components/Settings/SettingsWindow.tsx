@@ -169,7 +169,7 @@ const SettingsWindow: React.FC = () => {
         </div>
 
         {/* 底部按钮 */}
-        {activeTab !== 'about' && activeTab !== 'skills' && (
+        {activeTab !== 'about' && activeTab !== 'skills' && activeTab !== 'provider' && (
           <div className="p-4 flex items-center justify-end gap-3">
             {hasChanges && (
               <span className="text-sm text-destructive mr-2">有未保存的更改</span>

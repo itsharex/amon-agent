@@ -10,6 +10,58 @@ interface ProviderFormData {
   model: string;
 }
 
+interface PresetProvider {
+  id: string;
+  name: string;
+  apiUrl: string;
+  models: string[];
+}
+
+const PRESET_PROVIDERS: PresetProvider[] = [
+  {
+    id: 'custom',
+    name: '自定义',
+    apiUrl: '',
+    models: ['claude-opus-4-5-20251101', 'claude-sonnet-4-5-20250929', 'claude-haiku-4-5-20251001'],
+  },
+  {
+    id: 'claude',
+    name: 'Claude 官方',
+    apiUrl: 'https://api.anthropic.com',
+    models: ['claude-opus-4-5-20251101', 'claude-sonnet-4-5-20250929', 'claude-haiku-4-5-20251001'],
+  },
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    apiUrl: 'https://openrouter.ai/api',
+    models: ['anthropic/claude-opus-4.5', 'anthropic/claude-sonnet-4.5', 'anthropic/claude-haiku-4.5'],
+  },
+  {
+    id: 'glm',
+    name: 'GLM',
+    apiUrl: 'https://open.bigmodel.cn/api/anthropic',
+    models: ['glm-4.7'],
+  },
+  {
+    id: 'glm-en',
+    name: 'GLM (EN)',
+    apiUrl: 'https://api.z.ai/api/anthropic',
+    models: ['glm-4.7'],
+  },
+  {
+    id: 'minimax',
+    name: 'MiniMax',
+    apiUrl: 'https://api.minimaxi.com/anthropic',
+    models: ['MiniMax-M2.1'],
+  },
+  {
+    id: 'minimax-en',
+    name: 'MiniMax (EN)',
+    apiUrl: 'https://api.minimax.io/anthropic',
+    models: ['MiniMax-M2.1'],
+  },
+];
+
 const EMPTY_FORM: ProviderFormData = {
   name: '',
   apiUrl: '',
@@ -18,14 +70,41 @@ const EMPTY_FORM: ProviderFormData = {
 };
 
 const ProviderSettings: React.FC = () => {
-  const { formData, setAgentFormData, clearSaveError } = useSettingsStore();
+  const { formData, setAgentFormData, clearSaveError, saveSettings } = useSettingsStore();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [formValues, setFormValues] = useState<ProviderFormData>(EMPTY_FORM);
   const [formErrors, setFormErrors] = useState<Partial<ProviderFormData>>({});
+  const [selectedPresetId, setSelectedPresetId] = useState<string | null>('custom');
 
   const providers = formData.agent.providers || [];
   const activeProviderId = formData.agent.activeProviderId;
+
+  // 获取当前选中预置供应商的模型列表
+  const currentPresetModels = selectedPresetId
+    ? PRESET_PROVIDERS.find((p) => p.id === selectedPresetId)?.models || []
+    : [];
+
+  const handleSelectPreset = (preset: PresetProvider) => {
+    setSelectedPresetId(preset.id);
+    if (preset.id === 'custom') {
+      // 自定义模式：清空表单，允许用户自由输入
+      setFormValues({
+        ...formValues,
+        name: '',
+        apiUrl: '',
+        model: '',
+      });
+    } else {
+      // 预置模式：填充默认值
+      setFormValues({
+        ...formValues,
+        name: preset.name,
+        apiUrl: preset.apiUrl,
+        model: preset.models[0] || '',
+      });
+    }
+  };
 
   const validateForm = (): boolean => {
     const errors: Partial<ProviderFormData> = {};
@@ -41,9 +120,10 @@ const ProviderSettings: React.FC = () => {
     setIsAdding(true);
     setFormValues(EMPTY_FORM);
     setFormErrors({});
+    setSelectedPresetId('custom');
   };
 
-  const handleSaveNew = () => {
+  const handleSaveNew = async () => {
     if (!validateForm()) return;
 
     const newProvider: Provider = {
@@ -59,14 +139,17 @@ const ProviderSettings: React.FC = () => {
     // 如果是第一个 Provider，自动设为激活
     const newActiveId = providers.length === 0 ? newProvider.id : activeProviderId;
     setAgentFormData({ providers: newProviders, activeProviderId: newActiveId });
+    await saveSettings();
     setIsAdding(false);
     setFormValues(EMPTY_FORM);
+    setSelectedPresetId(null);
   };
 
   const handleCancelAdd = () => {
     setIsAdding(false);
     setFormValues(EMPTY_FORM);
     setFormErrors({});
+    setSelectedPresetId(null);
   };
 
   const handleStartEdit = (provider: Provider) => {
@@ -80,7 +163,7 @@ const ProviderSettings: React.FC = () => {
     setFormErrors({});
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!validateForm() || !editingId) return;
 
     clearSaveError();
@@ -96,6 +179,7 @@ const ProviderSettings: React.FC = () => {
         : p
     );
     setAgentFormData({ providers: updated });
+    await saveSettings();
     setEditingId(null);
     setFormValues(EMPTY_FORM);
   };
@@ -122,15 +206,42 @@ const ProviderSettings: React.FC = () => {
       newActiveId = filtered.length > 0 ? filtered[0].id : null;
     }
     setAgentFormData({ providers: filtered, activeProviderId: newActiveId });
+    await saveSettings();
   };
 
-  const handleSetActive = (id: string) => {
+  const handleSetActive = async (id: string) => {
     clearSaveError();
     setAgentFormData({ activeProviderId: id });
+    await saveSettings();
   };
 
   const renderForm = (onSave: () => void, onCancel: () => void) => (
     <div className="space-y-3 p-4 bg-muted rounded-lg border border-primary">
+      {/* 预置供应商选择器 */}
+      {isAdding && (
+        <div>
+          <label className="text-xs text-muted-foreground mb-2 block">
+            选择预置供应商
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {PRESET_PROVIDERS.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => handleSelectPreset(preset)}
+                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors
+                  ${selectedPresetId === preset.id
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-muted-foreground border-border hover:bg-accent'
+                  }`}
+              >
+                {preset.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 名称 */}
       <div>
         <label className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -160,13 +271,16 @@ const ProviderSettings: React.FC = () => {
           type="text"
           value={formValues.apiUrl}
           onChange={(e) => setFormValues({ ...formValues, apiUrl: e.target.value })}
-          placeholder="https://api.anthropic.com"
+          placeholder="例如: https://api.anthropic.com"
           className="w-full px-3 py-2 text-sm border border-border rounded-lg
                      bg-background text-foreground
                      placeholder-muted-foreground
                      focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
         {formErrors.apiUrl && <p className="text-xs text-destructive mt-1">{formErrors.apiUrl}</p>}
+        <p className="text-xs text-muted-foreground mt-1">
+          仅支持 Claude 兼容的 API 端点
+        </p>
       </div>
 
       {/* API Key */}
@@ -198,13 +312,31 @@ const ProviderSettings: React.FC = () => {
           type="text"
           value={formValues.model}
           onChange={(e) => setFormValues({ ...formValues, model: e.target.value })}
-          placeholder="claude-sonnet-4-20250514"
           className="w-full px-3 py-2 text-sm border border-border rounded-lg
                      bg-background text-foreground
                      placeholder-muted-foreground
                      focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
         />
         {formErrors.model && <p className="text-xs text-destructive mt-1">{formErrors.model}</p>}
+        {/* 预置模型标签 */}
+        {currentPresetModels.length > 1 && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {currentPresetModels.map((model) => (
+              <button
+                key={model}
+                type="button"
+                onClick={() => setFormValues({ ...formValues, model })}
+                className={`px-2 py-0.5 text-xs rounded border transition-colors
+                  ${formValues.model === model
+                    ? 'bg-primary/20 text-primary border-primary'
+                    : 'bg-background text-muted-foreground border-border hover:bg-accent'
+                  }`}
+              >
+                {model}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 操作按钮 */}
@@ -277,7 +409,7 @@ const ProviderSettings: React.FC = () => {
                     }`}
                 >
                   {/* 图标 */}
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <Server className={`w-5 h-5 ${activeProviderId === provider.id ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
 
