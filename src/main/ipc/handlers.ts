@@ -4,7 +4,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { IPC_CHANNELS } from '../../shared/ipc';
-import { Settings, Message, PermissionResult, ToolPermissionRequest, AskUserQuestionRequest, Session, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, ImageAttachment, ImageMimeType, FileInfo } from '../../shared/types';
+import { Settings, Message, PermissionResult, ToolPermissionRequest, AskUserQuestionRequest, PlanApprovalRequest, PlanApprovalResponse, Session, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, ImageAttachment, ImageMimeType, FileInfo } from '../../shared/types';
 import { sendMessage, interruptMessage } from '../agent/agentService';
 import { sessionStore } from '../store/sessionStore';
 import { permissionManager } from '../agent/permissionManager';
@@ -109,6 +109,36 @@ export function registerIpcHandlers(mainWindow: BrowserWindow): void {
           userQuestion: {
             questions: pendingRequest.questions,
             answers: params.answers,
+            timestamp: new Date().toISOString(),
+          },
+        });
+      }
+
+      return { success };
+    }
+  );
+
+  // ========== 计划审批相关 ==========
+
+  // 响应计划审批请求
+  ipcMain.handle(
+    IPC_CHANNELS.PLAN_APPROVAL_RESPOND,
+    async (_event, params: { requestId: string; response: PlanApprovalResponse }) => {
+      // 获取待处理的请求信息（在响应前获取）
+      const pendingRequest = permissionManager.getPendingPlanApprovalById(params.requestId);
+
+      // 响应计划审批请求
+      const success = permissionManager.respondToPlanApproval(params.requestId, params.response);
+
+      // 如果成功且有请求信息，将计划审批记录添加到当前活跃的 assistant 消息中
+      if (success && pendingRequest) {
+        sessionStore.addContentBlockToActiveMessage(pendingRequest.sessionId, {
+          type: 'plan_approval',
+          planApproval: {
+            id: pendingRequest.id,
+            plan: pendingRequest.plan,
+            approved: params.response.approved,
+            message: params.response.message,
             timestamp: new Date().toISOString(),
           },
         });
@@ -528,6 +558,13 @@ function setupPermissionManagerListeners(mainWindow: BrowserWindow): void {
   permissionManager.on('askUserQuestion:request', (request: AskUserQuestionRequest) => {
     if (!mainWindow.isDestroyed()) {
       mainWindow.webContents.send(IPC_CHANNELS.PUSH_ASK_USER_QUESTION_REQUEST, request);
+    }
+  });
+
+  // 计划审批请求
+  permissionManager.on('planApproval:request', (request: PlanApprovalRequest) => {
+    if (!mainWindow.isDestroyed()) {
+      mainWindow.webContents.send(IPC_CHANNELS.PUSH_PLAN_APPROVAL_REQUEST, request);
     }
   });
 }

@@ -10,6 +10,9 @@ export const IPC_CHANNELS = {
   // AskUserQuestion 相关
   ASK_USER_QUESTION_RESPOND: 'askUserQuestion:respond',
 
+  // 计划审批相关
+  PLAN_APPROVAL_RESPOND: 'planApproval:respond',
+
   // 会话相关
   SESSION_LIST: 'session:list',
   SESSION_CREATE: 'session:create',
@@ -65,6 +68,7 @@ export const IPC_CHANNELS = {
   PUSH_SDK_SESSION_ID: 'push:sdkSessionId',
   PUSH_PERMISSION_REQUEST: 'push:permissionRequest',
   PUSH_ASK_USER_QUESTION_REQUEST: 'push:askUserQuestionRequest',
+  PUSH_PLAN_APPROVAL_REQUEST: 'push:planApprovalRequest',
 } as const;
 
 export type IpcChannel = typeof IPC_CHANNELS[keyof typeof IPC_CHANNELS];

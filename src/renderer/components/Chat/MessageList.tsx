@@ -5,6 +5,7 @@ import { usePermissionStore } from '../../store/permissionStore';
 import { MessageItem } from '../Message';
 import PermissionRequest from '../Permission/PermissionRequest';
 import AskUserQuestionRequest from '../Permission/AskUserQuestionRequest';
+import PlanApprovalBlock from '../Message/ContentBlocks/PlanApprovalBlock';
 
 export interface MessageListRef {
   scrollToBottom: () => void;
@@ -18,7 +19,7 @@ interface MessageListProps {
 const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNearBottom }, ref) => {
   const { currentSessionId } = useSessionStore();
   const { getMessages, getSessionError, clearSessionError } = useChatStore();
-  const { getPendingRequest, getPendingQuestionRequest } = usePermissionStore();
+  const { getPendingRequest, getPendingQuestionRequest, getPendingPlanApprovalRequest } = usePermissionStore();
   const messages = getMessages(currentSessionId);
   const error = getSessionError(currentSessionId);
   
@@ -35,6 +36,7 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
   // 获取待处理的请求
   const pendingRequest = currentSessionId ? getPendingRequest(currentSessionId) : null;
   const pendingQuestionRequest = currentSessionId ? getPendingQuestionRequest(currentSessionId) : null;
+  const pendingPlanApprovalRequest = currentSessionId ? getPendingPlanApprovalRequest(currentSessionId) : null;
 
   // 滚动到底部
   const scrollToBottom = useCallback((instant = false) => {
@@ -149,13 +151,13 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
 
   // 当有权限请求或问题请求时滚动到底部
   useEffect(() => {
-    if (pendingRequest || pendingQuestionRequest) {
+    if (pendingRequest || pendingQuestionRequest || pendingPlanApprovalRequest) {
       shouldAutoScrollRef.current = true;
       requestAnimationFrame(() => {
         scrollToBottom(true);
       });
     }
-  }, [pendingRequest, pendingQuestionRequest, scrollToBottom]);
+  }, [pendingRequest, pendingQuestionRequest, pendingPlanApprovalRequest, scrollToBottom]);
 
   return (
     <div 
@@ -181,6 +183,13 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
           {/* 用户问题请求 - 待处理 */}
           {pendingQuestionRequest && (
             <AskUserQuestionRequest request={pendingQuestionRequest} />
+          )}
+
+          {/* 计划审批请求 - 待处理 */}
+          {pendingPlanApprovalRequest && (
+            <div className="mt-3">
+              <PlanApprovalBlock pendingRequest={pendingPlanApprovalRequest} />
+            </div>
           )}
 
           {/* 错误提示 */}

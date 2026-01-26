@@ -65,6 +65,31 @@ function createCanUseTool(sessionId: string) {
       };
     }
 
+    // 特殊处理 ExitPlanMode 工具
+    if (toolName === 'ExitPlanMode') {
+      const plan = String(input.plan || '');
+      const response = await permissionManager.requestPlanApproval(
+        sessionId,
+        plan
+      );
+
+      if (response.approved) {
+        return {
+          behavior: 'allow',
+          updatedInput: {
+            plan,
+            approved: true,
+            message: response.message,
+          },
+        };
+      } else {
+        return {
+          behavior: 'deny',
+          message: response.message || 'User rejected the plan',
+        };
+      }
+    }
+
     // 请求用户权限（其他工具）
     const result = await permissionManager.requestPermission(sessionId, toolName, input);
 
@@ -422,6 +447,7 @@ export async function interruptMessage(sessionId: string): Promise<void> {
   // 取消待处理的权限请求和问题请求
   permissionManager.cancelSessionRequests(sessionId);
   permissionManager.cancelSessionQuestions(sessionId);
+  permissionManager.cancelSessionPlanApprovals(sessionId);
 
   // 中止控制器
   if (messageState?.abortController) {

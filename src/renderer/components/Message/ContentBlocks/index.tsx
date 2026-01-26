@@ -5,6 +5,7 @@ import ThinkingBlock from './ThinkingBlock';
 import ToolCallBlock from './ToolCallBlock';
 import PermissionBlock from './PermissionBlock';
 import UserQuestionBlock from './UserQuestionBlock';
+import PlanApprovalBlock from './PlanApprovalBlock';
 
 export interface ContentBlockRendererProps {
   block: MessageContentBlock;
@@ -49,6 +50,9 @@ const ContentBlockRenderer: React.FC<ContentBlockRendererProps> = ({
 
     case 'user_question':
       return <UserQuestionBlock userQuestion={block.userQuestion} />;
+
+    case 'plan_approval':
+      return <PlanApprovalBlock planApproval={block.planApproval} />;
 
     default:
       // 未知类型，静默忽略

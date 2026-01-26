@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ToolPermissionRequest, PermissionResult, AskUserQuestionRequest } from '../types';
+import { ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, PlanApprovalRequest, PlanApprovalResponse } from '../types';
 
 interface PermissionState {
   // 当前待处理的权限请求（按会话分）
@@ -7,6 +7,9 @@ interface PermissionState {
 
   // 当前待处理的问题请求（按会话分）
   pendingQuestionRequests: Record<string, AskUserQuestionRequest>;
+
+  // 当前待处理的计划审批请求（按会话分）
+  pendingPlanApprovalRequests: Record<string, PlanApprovalRequest>;
 
   // Actions
   setPendingRequest: (request: ToolPermissionRequest) => void;
@@ -23,11 +26,20 @@ interface PermissionState {
 
   // 响应问题请求
   respondToQuestionRequest: (requestId: string, answers: Record<string, string>) => Promise<void>;
+
+  // PlanApproval Actions
+  setPendingPlanApprovalRequest: (request: PlanApprovalRequest) => void;
+  clearPendingPlanApprovalRequest: (sessionId: string) => void;
+  getPendingPlanApprovalRequest: (sessionId: string) => PlanApprovalRequest | null;
+
+  // 响应计划审批请求
+  respondToPlanApprovalRequest: (requestId: string, response: PlanApprovalResponse) => Promise<void>;
 }
 
 export const usePermissionStore = create<PermissionState>((set, get) => ({
   pendingRequests: {},
   pendingQuestionRequests: {},
+  pendingPlanApprovalRequests: {},
 
   setPendingRequest: (request) =>
     set((state) => ({
@@ -89,6 +101,37 @@ export const usePermissionStore = create<PermissionState>((set, get) => ({
       }
     }
   },
+
+  // PlanApproval 相关
+  setPendingPlanApprovalRequest: (request) =>
+    set((state) => ({
+      pendingPlanApprovalRequests: { ...state.pendingPlanApprovalRequests, [request.sessionId]: request },
+    })),
+
+  clearPendingPlanApprovalRequest: (sessionId) =>
+    set((state) => {
+      const { [sessionId]: removed, ...rest } = state.pendingPlanApprovalRequests;
+      void removed;
+      return { pendingPlanApprovalRequests: rest };
+    }),
+
+  getPendingPlanApprovalRequest: (sessionId) => {
+    return get().pendingPlanApprovalRequests[sessionId] || null;
+  },
+
+  respondToPlanApprovalRequest: async (requestId, response) => {
+    // 发送响应到主进程（主进程会保存计划审批记录到消息）
+    await window.electronAPI.planApproval.respond(requestId, response);
+
+    // 清除对应的待处理请求
+    const requests = get().pendingPlanApprovalRequests;
+    for (const [sessionId, request] of Object.entries(requests)) {
+      if (request.id === requestId) {
+        get().clearPendingPlanApprovalRequest(sessionId);
+        break;
+      }
+    }
+  },
 }));
 
 // 初始化监听器（模块级别，只执行一次）
@@ -101,5 +144,10 @@ if (typeof window !== 'undefined' && window.electronAPI) {
   // 监听用户问题请求
   window.electronAPI.askUserQuestion.onRequest((request) => {
     usePermissionStore.getState().setPendingQuestionRequest(request);
+  });
+
+  // 监听计划审批请求
+  window.electronAPI.planApproval.onRequest((request) => {
+    usePermissionStore.getState().setPendingPlanApprovalRequest(request);
   });
 }

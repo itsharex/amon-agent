@@ -6,6 +6,8 @@ import {
   AskUserQuestionRequest,
   AskUserQuestion,
   AskUserQuestionResponse,
+  PlanApprovalRequest,
+  PlanApprovalResponse,
 } from '../../shared/types';
 import { PERMISSION_TIMEOUT_MS } from '../../shared/constants';
 import { createLogger } from '../store/logger';
@@ -33,6 +35,16 @@ interface PendingQuestion {
 }
 
 /**
+ * 待处理的计划审批请求
+ */
+interface PendingPlanApproval {
+  request: PlanApprovalRequest;
+  resolve: (result: PlanApprovalResponse) => void;
+  reject: (error: Error) => void;
+  timeout: NodeJS.Timeout;
+}
+
+/**
  * 权限管理器
  * 管理工具权限请求的生命周期
  */
@@ -40,6 +52,7 @@ class PermissionManager extends EventEmitter {
   private static instance: PermissionManager;
   private pendingRequests: Map<string, PendingRequest> = new Map();
   private pendingQuestions: Map<string, PendingQuestion> = new Map();
+  private pendingPlanApprovals: Map<string, PendingPlanApproval> = new Map();
 
   private constructor() {
     super();
@@ -269,6 +282,109 @@ class PermissionManager extends EventEmitter {
           answers: {},
         });
         this.pendingQuestions.delete(id);
+      }
+    }
+  }
+
+  // ==================== PlanApproval 相关方法 ====================
+
+  /**
+   * 创建计划审批请求并等待响应
+   */
+  async requestPlanApproval(
+    sessionId: string,
+    plan: string
+  ): Promise<PlanApprovalResponse> {
+    const request: PlanApprovalRequest = {
+      id: uuidv4(),
+      sessionId,
+      plan,
+      timestamp: new Date().toISOString(),
+    };
+
+    log.info('Plan approval requested', { requestId: request.id }, sessionId);
+
+    return new Promise((resolve, reject) => {
+      // 设置超时（计划审批可能需要更长时间，使用相同的超时）
+      const timeout = setTimeout(() => {
+        this.pendingPlanApprovals.delete(request.id);
+        log.warn('Plan approval request timed out', { requestId: request.id }, sessionId);
+        // 超时默认拒绝
+        resolve({
+          approved: false,
+          message: 'Plan approval request timed out',
+        });
+      }, PERMISSION_TIMEOUT_MS);
+
+      // 保存请求
+      this.pendingPlanApprovals.set(request.id, {
+        request,
+        resolve,
+        reject,
+        timeout,
+      });
+
+      // 发送事件通知渲染进程
+      this.emit('planApproval:request', request);
+    });
+  }
+
+  /**
+   * 响应计划审批请求
+   */
+  respondToPlanApproval(requestId: string, response: PlanApprovalResponse): boolean {
+    const pending = this.pendingPlanApprovals.get(requestId);
+    if (!pending) {
+      log.warn('Plan approval request not found', { requestId });
+      return false;
+    }
+
+    log.info('Plan approval responded', { requestId, approved: response.approved }, pending.request.sessionId);
+
+    // 清除超时
+    clearTimeout(pending.timeout);
+
+    // 移除请求
+    this.pendingPlanApprovals.delete(requestId);
+
+    // 解析 Promise
+    pending.resolve(response);
+
+    return true;
+  }
+
+  /**
+   * 获取会话的待处理计划审批请求
+   */
+  getPendingPlanApproval(sessionId: string): PlanApprovalRequest | null {
+    for (const pending of this.pendingPlanApprovals.values()) {
+      if (pending.request.sessionId === sessionId) {
+        return pending.request;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 根据请求 ID 获取待处理计划审批请求
+   */
+  getPendingPlanApprovalById(requestId: string): PlanApprovalRequest | null {
+    const pending = this.pendingPlanApprovals.get(requestId);
+    return pending?.request || null;
+  }
+
+  /**
+   * 取消会话的所有待处理计划审批请求
+   */
+  cancelSessionPlanApprovals(sessionId: string): void {
+    for (const [id, pending] of this.pendingPlanApprovals) {
+      if (pending.request.sessionId === sessionId) {
+        clearTimeout(pending.timeout);
+        pending.resolve({
+          approved: false,
+          message: 'Session interrupted',
+        });
+        this.pendingPlanApprovals.delete(id);
       }
     }
   }

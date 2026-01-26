@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../shared/ipc';
-import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, MessageCompleteData, ImageAttachment, FileInfo } from '../shared/types';
+import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, PlanApprovalRequest, PlanApprovalResponse, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, MessageCompleteData, ImageAttachment, FileInfo } from '../shared/types';
 
 // 推送事件回调类型
 type MessagesUpdatedCallback = (data: { sessionId: string; messages: Message[] }) => void;
@@ -14,6 +14,7 @@ type SdkSessionIdCallback = (data: { sessionId: string; sdkSessionId: string }) 
 type SettingsChangedCallback = (settings: Settings) => void;
 type PermissionRequestCallback = (request: ToolPermissionRequest) => void;
 type AskUserQuestionRequestCallback = (request: AskUserQuestionRequest) => void;
+type PlanApprovalRequestCallback = (request: PlanApprovalRequest) => void;
 
 // 回调列表
 const messagesUpdatedCallbacks: Set<MessagesUpdatedCallback> = new Set();
@@ -28,6 +29,7 @@ const settingsChangedCallbacks: Set<SettingsChangedCallback> = new Set();
 const newSessionShortcutCallbacks: Set<() => void> = new Set();
 const permissionRequestCallbacks: Set<PermissionRequestCallback> = new Set();
 const askUserQuestionRequestCallbacks: Set<AskUserQuestionRequestCallback> = new Set();
+const planApprovalRequestCallbacks: Set<PlanApprovalRequestCallback> = new Set();
 const cliSessionCreatedCallbacks: Set<(data: { sessionId: string }) => void> = new Set();
 
 // 监听主进程推送事件
@@ -77,6 +79,10 @@ ipcRenderer.on(IPC_CHANNELS.PUSH_PERMISSION_REQUEST, (_event, request) => {
 
 ipcRenderer.on(IPC_CHANNELS.PUSH_ASK_USER_QUESTION_REQUEST, (_event, request) => {
   askUserQuestionRequestCallbacks.forEach(cb => cb(request));
+});
+
+ipcRenderer.on(IPC_CHANNELS.PUSH_PLAN_APPROVAL_REQUEST, (_event, request) => {
+  planApprovalRequestCallbacks.forEach(cb => cb(request));
 });
 
 // CLI 会话创建事件
@@ -430,6 +436,30 @@ const electronAPI = {
      */
     offRequest: (callback: AskUserQuestionRequestCallback): void => {
       askUserQuestionRequestCallbacks.delete(callback);
+    },
+  },
+
+  // ========== Plan Approval API ==========
+  planApproval: {
+    /**
+     * 响应计划审批请求
+     */
+    respond: (requestId: string, response: PlanApprovalResponse): Promise<{ success: boolean }> => {
+      return ipcRenderer.invoke(IPC_CHANNELS.PLAN_APPROVAL_RESPOND, { requestId, response });
+    },
+
+    /**
+     * 监听计划审批请求
+     */
+    onRequest: (callback: PlanApprovalRequestCallback): void => {
+      planApprovalRequestCallbacks.add(callback);
+    },
+
+    /**
+     * 取消监听计划审批请求
+     */
+    offRequest: (callback: PlanApprovalRequestCallback): void => {
+      planApprovalRequestCallbacks.delete(callback);
     },
   },
 

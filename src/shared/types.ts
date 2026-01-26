@@ -54,7 +54,8 @@ export type MessageContentBlock =
   | { type: 'text'; content: string }
   | { type: 'tool_call'; toolCall: ToolCall }
   | { type: 'permission'; permission: PermissionRecord }
-  | { type: 'user_question'; userQuestion: UserQuestionRecord };
+  | { type: 'user_question'; userQuestion: UserQuestionRecord }
+  | { type: 'plan_approval'; planApproval: PlanApprovalRecord };
 
 // Token 用量信息
 export interface TokenUsage {
@@ -228,6 +229,37 @@ export interface AskUserQuestionRequest {
 export interface UserQuestionRecord {
   questions: AskUserQuestion[];
   answers: Record<string, string>;
+  timestamp: string;
+}
+
+// ==================== 计划审批相关类型 ====================
+
+/**
+ * 计划审批请求
+ */
+export interface PlanApprovalRequest {
+  id: string;
+  sessionId: string;
+  plan: string; // Markdown 格式的计划内容
+  timestamp: string;
+}
+
+/**
+ * 计划审批响应
+ */
+export interface PlanApprovalResponse {
+  approved: boolean;
+  message?: string; // 用户反馈或拒绝原因
+}
+
+/**
+ * 计划审批记录（用于消息内容块）
+ */
+export interface PlanApprovalRecord {
+  id: string;
+  plan: string;
+  approved?: boolean;
+  message?: string;
   timestamp: string;
 }
 
