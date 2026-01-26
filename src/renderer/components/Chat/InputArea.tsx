@@ -3,6 +3,7 @@ import { useChatStore } from '../../store/chatStore';
 import { useSessionStore } from '../../store/sessionStore';
 import { Square, ArrowUp, Paperclip, X } from 'lucide-react';
 import { ImageAttachment, ImageMimeType } from '../../types';
+import { useFileMention, FileMentionPopover, InputHighlight } from './FileMention';
 
 const MAX_IMAGES = 10;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -26,6 +27,13 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
 
   // 当前会话是否正在加载
   const isLoading = isSessionLoading(currentSessionId);
+
+  // @ 文件提及功能
+  const fileMention = useFileMention({
+    input,
+    onChange: setInput,
+    textareaRef,
+  });
 
   // 自动聚焦输入框
   useEffect(() => {
@@ -180,6 +188,11 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // 先让 fileMention 处理键盘事件
+    if (fileMention.handleKeyDown(e)) {
+      return;
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -241,26 +254,51 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
           )}
 
           {/* 上半部分：输入区域 */}
-          <div className="p-3 pb-2">
+          <div className="p-3 pb-2 relative">
+              {/* 高亮覆盖层 */}
+              {fileMention.mentionedPaths.length > 0 && (
+                <InputHighlight
+                  text={input}
+                  mentionedPaths={fileMention.mentionedPaths}
+                  className="
+                    absolute inset-0 py-2 px-2 m-3 mb-2
+                    pointer-events-none whitespace-pre-wrap break-words
+                    text-transparent
+                  "
+                />
+              )}
               <textarea
                 ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                placeholder={currentSessionId ? '向 Amon 提问...（可粘贴或拖拽图片）' : '请先选择或创建会话'}
+                placeholder={currentSessionId ? '向 Amon 提问...（@ 提及文件）' : '请先选择或创建会话'}
                 disabled={!currentSessionId}
                 rows={1}
-                className="
+                className={`
                   w-full py-2 px-2
                   bg-transparent border-0 resize-none
-                  text-foreground
                   placeholder:text-muted-foreground
                   focus:outline-none focus:ring-0
                   disabled:opacity-50 disabled:cursor-not-allowed
                   max-h-32
-                "
+                  ${fileMention.mentionedPaths.length > 0
+                    ? 'text-transparent caret-foreground'
+                    : 'text-foreground'
+                  }
+                `}
                 style={{ height: 'auto' }}
+              />
+              {/* 文件提及下拉框 */}
+              <FileMentionPopover
+                isOpen={fileMention.isOpen}
+                files={fileMention.files}
+                isLoading={fileMention.isLoading}
+                selectedIndex={fileMention.selectedIndex}
+                position={fileMention.triggerPosition}
+                onSelect={fileMention.selectFile}
+                onClose={fileMention.close}
               />
           </div>
 

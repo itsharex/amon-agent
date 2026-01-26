@@ -1,8 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Message } from '../../types';
+import { useSessionStore } from '../../store/sessionStore';
 
 export interface UserMessageProps {
   message: Message;
+}
+
+/**
+ * 从文本中提取所有 @path 模式
+ */
+function extractMentionedPaths(text: string): string[] {
+  const paths: string[] = [];
+  // 匹配 @ 后面跟着非空白字符的模式
+  const regex = /@([^\s@]+)/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    paths.push(match[1]);
+  }
+  return paths;
+}
+
+/**
+ * 渲染带高亮的文本内容
+ */
+function renderHighlightedContent(
+  text: string,
+  validPaths: string[]
+): React.ReactNode[] {
+  if (validPaths.length === 0) {
+    return [text];
+  }
+
+  const result: React.ReactNode[] = [];
+  let remaining = text;
+  let keyIndex = 0;
+
+  // 按长度排序，优先匹配长路径
+  const sortedPaths = [...validPaths].sort((a, b) => b.length - a.length);
+
+  while (remaining.length > 0) {
+    let earliestMatch: { index: number; path: string } | null = null;
+
+    for (const path of sortedPaths) {
+      const pattern = `@${path}`;
+      const index = remaining.indexOf(pattern);
+      if (index !== -1 && (earliestMatch === null || index < earliestMatch.index)) {
+        earliestMatch = { index, path };
+      }
+    }
+
+    if (earliestMatch) {
+      if (earliestMatch.index > 0) {
+        result.push(remaining.slice(0, earliestMatch.index));
+      }
+
+      result.push(
+        <span
+          key={keyIndex++}
+          className="bg-primary/20 text-primary rounded px-0.5"
+        >
+          @{earliestMatch.path}
+        </span>
+      );
+
+      remaining = remaining.slice(earliestMatch.index + earliestMatch.path.length + 1);
+    } else {
+      result.push(remaining);
+      break;
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -10,6 +78,50 @@ export interface UserMessageProps {
  */
 const UserMessage: React.FC<UserMessageProps> = ({ message }) => {
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [validPaths, setValidPaths] = useState<string[]>([]);
+  const { currentSessionId } = useSessionStore();
+
+  // 提取消息中的所有 @path
+  const mentionedPaths = useMemo(
+    () => extractMentionedPaths(message.content || ''),
+    [message.content]
+  );
+
+  // 验证路径是否存在
+  useEffect(() => {
+    if (!currentSessionId || mentionedPaths.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    // 先重置，然后异步获取
+    const fetchValidPaths = async () => {
+      try {
+        const result = await window.electronAPI.workspace.validatePaths(
+          currentSessionId,
+          mentionedPaths
+        );
+        if (!cancelled && result.success) {
+          setValidPaths(result.validPaths);
+        }
+      } catch {
+        // 忽略错误
+      }
+    };
+
+    fetchValidPaths();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentSessionId, mentionedPaths]);
+
+  // 渲染高亮内容
+  const highlightedContent = useMemo(
+    () => renderHighlightedContent(message.content || '', validPaths),
+    [message.content, validPaths]
+  );
 
   return (
     <div className="px-4 py-3 bg-user-bubble text-user-bubble-foreground rounded-2xl rounded-br-md text-[15px] leading-relaxed overflow-hidden">
@@ -30,7 +142,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message }) => {
 
       {/* 文本内容 */}
       {message.content && (
-        <div className="whitespace-pre-wrap break-words">{message.content}</div>
+        <div className="whitespace-pre-wrap break-words">{highlightedContent}</div>
       )}
 
       {/* 图片放大查看模态框 */}

@@ -296,6 +296,17 @@ export interface RecommendedSkill {
  */
 export type SkillInstallTarget = 'system' | 'workspace';
 
+// ==================== Workspace 相关类型 ====================
+
+/**
+ * 文件信息（用于 @ 提及）
+ */
+export interface FileInfo {
+  path: string;       // 相对 workspace 路径
+  name: string;       // 文件名
+  extension?: string; // 文件扩展名
+}
+
 // ==================== IPC 结果类型 ====================
 
 /**

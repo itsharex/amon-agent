@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from '../shared/ipc';
-import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, MessageCompleteData, ImageAttachment } from '../shared/types';
+import { Settings, Session, Message, ToolPermissionRequest, PermissionResult, AskUserQuestionRequest, SkillsLoadResult, RecommendedSkill, SkillInstallTarget, MessageOptions, SettingsSetResult, MessageCompleteData, ImageAttachment, FileInfo } from '../shared/types';
 
 // 推送事件回调类型
 type MessagesUpdatedCallback = (data: { sessionId: string; messages: Message[] }) => void;
@@ -478,6 +478,23 @@ const electronAPI = {
      */
     uninstall: (skillPath: string): Promise<{ success: boolean; error?: string }> => {
       return ipcRenderer.invoke(IPC_CHANNELS.SKILLS_UNINSTALL, skillPath);
+    },
+  },
+
+  // ========== Workspace API ==========
+  workspace: {
+    /**
+     * 列出工作空间文件
+     */
+    listFiles: (sessionId: string, query?: string, limit?: number): Promise<{ success: boolean; files: FileInfo[] }> => {
+      return ipcRenderer.invoke(IPC_CHANNELS.WORKSPACE_LIST_FILES, { sessionId, query, limit });
+    },
+
+    /**
+     * 验证路径是否存在
+     */
+    validatePaths: (sessionId: string, paths: string[]): Promise<{ success: boolean; validPaths: string[] }> => {
+      return ipcRenderer.invoke(IPC_CHANNELS.WORKSPACE_VALIDATE_PATHS, { sessionId, paths });
     },
   },
 

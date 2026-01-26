@@ -40,6 +40,7 @@ export type {
   MessageCompleteData,
   ImageAttachment,
   ImageMimeType,
+  FileInfo,
 } from '../../shared/types';
 
 // 导出常量
@@ -59,6 +60,7 @@ import type {
   SettingsSetResult,
   MessageCompleteData,
   ImageAttachment,
+  FileInfo,
 } from '../../shared/types';
 
 export interface ElectronAPI {
@@ -134,6 +136,10 @@ export interface ElectronAPI {
     listRecommended: () => Promise<RecommendedSkill[]>;
     install: (skillId: string, target: SkillInstallTarget, workspacePath?: string) => Promise<{ success: boolean; error?: string }>;
     uninstall: (skillPath: string) => Promise<{ success: boolean; error?: string }>;
+  };
+  workspace: {
+    listFiles: (sessionId: string, query?: string, limit?: number) => Promise<{ success: boolean; files: FileInfo[] }>;
+    validatePaths: (sessionId: string, paths: string[]) => Promise<{ success: boolean; validPaths: string[] }>;
   };
   app: {
     getVersion: () => Promise<{ success: boolean; version: string }>;

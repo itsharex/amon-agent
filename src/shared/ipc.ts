@@ -47,6 +47,10 @@ export const IPC_CHANNELS = {
   SHELL_OPEN_PATH: 'shell:open-path',
   SHELL_OPEN_EXTERNAL: 'shell:open-external',
 
+  // Workspace 相关
+  WORKSPACE_LIST_FILES: 'workspace:listFiles',
+  WORKSPACE_VALIDATE_PATHS: 'workspace:validatePaths',
+
   // 应用信息
   APP_GET_VERSION: 'app:get-version',
 
