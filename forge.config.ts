@@ -57,7 +57,7 @@ const config: ForgeConfig = {
         name: 'amon-agent',
       },
       prerelease: false,
-      draft: true, // 先创建为 Draft，手动检查后再发布
+      draft: false, // 先创建为 Draft，手动检查后再发布
       generateReleaseNotes: false, // 使用 Changeset 生成的 CHANGELOG 作为 Release Notes
     }),
   ],
