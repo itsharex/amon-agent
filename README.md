@@ -78,6 +78,14 @@ Amon 支持 Agent Skills，你可以通过安装 Skills 为 Amon 添加专业能
 
 访问 [Releases](https://github.com/liruifengv/amon-agent/releases) 页面下载对应平台的安装包。
 
+#### macOS 用户注意
+
+由于应用未进行 Apple 签名，macOS 可能会阻止应用运行。下载后请在终端执行以下命令移除隔离属性：
+
+```bash
+xattr -cr /Applications/Amon.app
+```
+
 ### 配置
 
 Amon 提供两种使用模式，根据你的需求选择：
