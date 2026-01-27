@@ -18,6 +18,7 @@ import {
 import { CodeBlockContent } from '../../ai-elements/code-block';
 import type { BundledLanguage } from 'shiki';
 import * as Diff from 'diff';
+import { useSessionStore } from '../../../store/sessionStore';
 
 // 文件扩展名到语言的映射
 const EXT_TO_LANG: Record<string, BundledLanguage> = {
@@ -99,6 +100,19 @@ function getLanguageFromPath(filePath: string): BundledLanguage {
   return EXT_TO_LANG[ext] || 'text';
 }
 
+/**
+ * 截断文件路径，如果是工作空间内的文件则显示相对路径
+ */
+function truncateFilePath(filePath: string, workspace?: string): string {
+  if (!workspace) return filePath;
+  // 确保 workspace 以 / 结尾
+  const normalizedWorkspace = workspace.endsWith('/') ? workspace : workspace + '/';
+  if (filePath.startsWith(normalizedWorkspace)) {
+    return filePath.slice(normalizedWorkspace.length);
+  }
+  return filePath;
+}
+
 export interface ToolCallBlockProps {
   toolCall: ToolCall;
 }
@@ -158,52 +172,41 @@ function getInputSummary(name: string, input: Record<string, unknown>): string {
 }
 
 /**
- * 代码内容展示组件
- */
-const CodeContent: React.FC<{
-  label: string;
-  code: string;
-  language: BundledLanguage;
-  labelColor?: string;
-}> = ({ label, code, language, labelColor = 'text-muted-foreground' }) => (
-  <div className="px-3 py-2">
-    <div className={`text-xs font-medium mb-1 ${labelColor}`}>{label}</div>
-    <div className="rounded-md border border-border overflow-hidden max-h-60 overflow-y-auto">
-      <CodeBlockContent code={code} language={language} showLineNumbers={false} />
-    </div>
-  </div>
-);
-
-/**
  * 渲染 Write 工具的输入内容
  */
 const WriteInputContent: React.FC<{ input: Record<string, unknown> }> = ({ input }) => {
+  const workspace = useSessionStore((state) => state.getCurrentWorkspace());
   const filePath = String(input.file_path || '');
+  const displayPath = truncateFilePath(filePath, workspace);
   const content = String(input.content || '');
   const language = useMemo(() => getLanguageFromPath(filePath), [filePath]);
 
   return (
-    <>
-      {/* 文件路径 */}
-      <div className="px-3 py-2">
-        <div className="text-xs font-medium text-muted-foreground mb-1">File Path</div>
-        <div className="text-xs font-mono bg-black/5 dark:bg-white/10 text-foreground rounded px-2 py-1">
-          {filePath}
+    <div className="p-3">
+      {/* 代码块容器 - 带边框 */}
+      <div className="rounded-md border border-border overflow-hidden">
+        {/* 代码块标题栏 */}
+        <div className="flex items-center bg-muted px-3 py-2 text-muted-foreground text-xs border-b border-border">
+          <span className="font-mono truncate">{displayPath}</span>
+        </div>
+        {/* 代码内容 */}
+        <div className="max-h-80 overflow-y-auto">
+          <CodeBlockContent code={content} language={language} showLineNumbers />
         </div>
       </div>
-      {/* 写入内容 */}
-      <div className="border-t border-inherit">
-        <CodeContent label="Content" code={content} language={language} />
-      </div>
-    </>
+    </div>
   );
 };
 
 /**
- * Diff 展示组件
+ * Diff 展示组件 - 类似代码块样式
  */
 const DiffView: React.FC<{ oldStr: string; newStr: string }> = ({ oldStr, newStr }) => {
   const diffResult = useMemo(() => Diff.diffLines(oldStr, newStr), [oldStr, newStr]);
+
+  // 计算行号
+  let oldLineNum = 1;
+  let newLineNum = 1;
 
   return (
     <div className="font-mono text-xs overflow-x-auto">
@@ -216,34 +219,51 @@ const DiffView: React.FC<{ oldStr: string; newStr: string }> = ({ oldStr, newStr
 
         return lines.map((line, lineIndex) => {
           if (part.added) {
+            const lineNum = newLineNum++;
             return (
               <div
                 key={`${index}-${lineIndex}`}
-                className="bg-green-500/20 text-green-700 dark:text-green-400 border-l-2 border-green-500 pl-2 pr-2 py-0.5"
+                className="bg-green-500/20 flex"
               >
-                <span className="select-none opacity-50 mr-2">+</span>
-                {line || ' '}
+                <span className="select-none text-green-600 dark:text-green-400 w-12 shrink-0 text-right pr-2 py-0.5 bg-green-500/10">
+                  {lineNum} +
+                </span>
+                <span className="text-green-700 dark:text-green-300 pl-3 pr-2 py-0.5 flex-1">
+                  {line || ' '}
+                </span>
               </div>
             );
           }
           if (part.removed) {
+            const lineNum = oldLineNum++;
             return (
               <div
                 key={`${index}-${lineIndex}`}
-                className="bg-red-500/20 text-red-700 dark:text-red-400 border-l-2 border-red-500 pl-2 pr-2 py-0.5"
+                className="bg-red-500/20 flex"
               >
-                <span className="select-none opacity-50 mr-2">-</span>
-                {line || ' '}
+                <span className="select-none text-red-600 dark:text-red-400 w-12 shrink-0 text-right pr-2 py-0.5 bg-red-500/10">
+                  {lineNum} -
+                </span>
+                <span className="text-red-700 dark:text-red-300 pl-3 pr-2 py-0.5 flex-1">
+                  {line || ' '}
+                </span>
               </div>
             );
           }
+          // 未变更的行，同时增加两个行号
+          oldLineNum++;
+          newLineNum++;
           return (
             <div
               key={`${index}-${lineIndex}`}
-              className="text-muted-foreground pl-2 pr-2 py-0.5 border-l-2 border-transparent"
+              className="flex"
             >
-              <span className="select-none opacity-50 mr-2"> </span>
-              {line || ' '}
+              <span className="select-none text-muted-foreground/50 w-12 shrink-0 text-right pr-2 py-0.5">
+                {oldLineNum - 1}
+              </span>
+              <span className="text-muted-foreground pl-3 pr-2 py-0.5 flex-1">
+                {line || ' '}
+              </span>
             </div>
           );
         });
@@ -256,29 +276,26 @@ const DiffView: React.FC<{ oldStr: string; newStr: string }> = ({ oldStr, newStr
  * 渲染 Edit 工具的输入内容
  */
 const EditInputContent: React.FC<{ input: Record<string, unknown> }> = ({ input }) => {
+  const workspace = useSessionStore((state) => state.getCurrentWorkspace());
   const filePath = String(input.file_path || '');
+  const displayPath = truncateFilePath(filePath, workspace);
   const oldString = String(input.old_string || '');
   const newString = String(input.new_string || '');
 
   return (
-    <>
-      {/* 文件路径 */}
-      <div className="px-3 py-2">
-        <div className="text-xs font-medium text-muted-foreground mb-1">File Path</div>
-        <div className="text-xs font-mono bg-black/5 dark:bg-white/10 text-foreground rounded px-2 py-1">
-          {filePath}
+    <div className="p-3">
+      {/* 代码块容器 - 带边框 */}
+      <div className="rounded-md border border-border overflow-hidden">
+        {/* 代码块标题栏 */}
+        <div className="flex items-center bg-muted px-3 py-2 text-muted-foreground text-xs border-b border-border">
+          <span className="font-mono truncate">{displayPath}</span>
+        </div>
+        {/* Diff 内容 */}
+        <div className="max-h-80 overflow-y-auto">
+          <DiffView oldStr={oldString} newStr={newString} />
         </div>
       </div>
-      {/* Diff 展示 */}
-      <div className="border-t border-inherit">
-        <div className="px-3 py-2">
-          <div className="text-xs font-medium text-muted-foreground mb-1">Changes</div>
-          <div className="rounded-md border border-border overflow-hidden max-h-60 overflow-y-auto bg-black/5 dark:bg-white/5">
-            <DiffView oldStr={oldString} newStr={newString} />
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };
 
@@ -340,8 +357,8 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
         {/* 工具名称 */}
         <span className="font-medium text-sm shrink-0">{displayName}</span>
 
-        {/* 输入摘要 */}
-        {inputSummary && (
+        {/* 输入摘要 - Write/Edit 工具不显示 */}
+        {inputSummary && !isStandaloneTool && (
           <span className="text-xs opacity-70 truncate flex-1 font-mono">
             {inputSummary}
           </span>
@@ -357,8 +374,8 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall }) => {
           {/* 输入参数 - 根据工具类型显示不同内容 */}
           {renderInputContent()}
 
-          {/* 输出结果 */}
-          {toolCall.output && (
+          {/* 输出结果 - Write/Edit 工具不显示（除非出错） */}
+          {toolCall.output && (!isStandaloneTool || toolCall.isError) && (
             <div className="px-3 py-2 border-t border-inherit">
               <div className={`text-xs font-medium mb-1 ${toolCall.isError ? 'text-red-500' : 'text-muted-foreground'}`}>
                 {toolCall.isError ? 'Error' : 'Output'}
