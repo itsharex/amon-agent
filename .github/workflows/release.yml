@@ -46,9 +46,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 如果有版本发布，输出信息
-      - name: Output Release Info
+      # 如果有版本发布，使用 Changeset 生成的 CHANGELOG 更新 Release Notes
+      - name: Update Release Notes from Changelog
         if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Published packages:"
-          echo "${{ steps.changesets.outputs.publishedPackages }}"
+          # 获取当前版本号
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: v$VERSION"
+
+          # 从 CHANGELOG.md 提取当前版本的内容到临时文件
+          # Changeset 生成的格式: ## x.x.x 开头，到下一个 ## 或文件结束
+          awk -v ver="$VERSION" '
+            BEGIN { found=0 }
+            /^## / {
+              if (found) exit
+              if ($2 == ver) { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md > /tmp/release-notes.md
+
+          # 如果提取到内容，更新 Release
+          if [ -s /tmp/release-notes.md ]; then
+            echo "Updating release v$VERSION with changelog content:"
+            cat /tmp/release-notes.md
+            gh release edit "v$VERSION" --notes-file /tmp/release-notes.md
+          else
+            echo "No changelog content found for version $VERSION"
+          fi

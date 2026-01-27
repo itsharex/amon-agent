@@ -58,7 +58,7 @@ const config: ForgeConfig = {
       },
       prerelease: false,
       draft: true, // 先创建为 Draft，手动检查后再发布
-      generateReleaseNotes: true,
+      generateReleaseNotes: false, // 使用 Changeset 生成的 CHANGELOG 作为 Release Notes
     }),
   ],
   hooks: {
