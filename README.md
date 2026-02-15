@@ -2,8 +2,12 @@
 <div align="center">
   <img src="./public/images/Logo.png" style="border-radius: 16px;" alt="Amon" width="64" />
   <h1>Amon Coworker</h1>
-  <p>你的桌面 AI 工作伙伴</p>
   <p>Your AI coworker running on your desktop</p>
+
+  <a href="./README.zh-CN.md">中文</a> | English
+
+  <br/>
+  <br/>
 
   <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL v3"></a>
   <a href="https://www.electronjs.org/"><img src="https://img.shields.io/badge/Electron-39-47848F?logo=electron&logoColor=white" alt="Electron"></a>
@@ -12,202 +16,198 @@
   <a href="https://github.com/anthropics/claude-code"><img src="https://img.shields.io/badge/Claude-Agent%20SDK-CC785C?logo=anthropic&logoColor=white" alt="Claude"></a>
 </div>
 
-## 关于 Amon
+## About Amon
 
-Amon 是运行在本地的智能 AI Coworker，基于 [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview) 构建。它不仅能与你对话，还能真正帮你完成工作：编写代码、执行命令、搜索信息、管理文件。
+Amon is an intelligent AI coworker that runs locally on your desktop, built on the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview). It doesn't just chat with you — it actually helps you get work done: writing code, executing commands, searching for information, and managing files.
 
+## Feature Overview
 
-## 功能速览
+Let's take a look at Amon's features through screenshots.
 
-我们来看看截图预览 Amon 的功能。
+![Thinking / Tool Calls](./screenshots/img1.png)
 
-![思考/工具调用](./screenshots/img1.png)
+Amon can think through your messages, execute tool calls, and complete your tasks.
 
-Amon 可以根据你发送的消息，进行思考，执行工具调用，完成你的任务。
+![Plan Mode](./screenshots/img2.jpg)
 
-![计划模式](./screenshots/img2.jpg)
+Amon has a plan mode that creates a TODO task list first, then executes according to the plan.
 
-Amon 拥有计划模式，可以先创建任务 TODO，然后按计划执行。
+![Dark Theme](./screenshots/img3.jpg)
 
-![深色主题](./screenshots/img3.jpg)
+Amon supports both dark and light theme modes.
 
-Amon 拥有深色/浅色主题模式。
+![File Diff](./screenshots/img4.jpg)
 
-![文件修改 diff](./screenshots/img4.jpg)
+Amon can display file modification diffs.
 
-Amon 可以展示文件修改 diff 内容。
+![Send Images](./screenshots/img5.png)
 
-![发送图片](./screenshots/img5.png)
+Amon supports sending image messages.
 
-Amon 支持发送图片消息。
+![Custom Multi-Provider](./screenshots/img6.png)
 
-![自定义多供应商](./screenshots/img6.png)
+Amon allows you to add multiple API providers. Note: Currently only Claude API-compatible format APIs are supported.
 
-Amon 可以自定义添加多个 API 供应商。注意：目前只支持 Claude API 兼容格式的 API。
+![Agent Configuration](./screenshots/img7.png)
 
-![智能体配置](./screenshots/img7.png)
+Amon lets you configure Agent execution permissions with different permission levels.
 
-Amon 可以设置 Agent 的执行权限，有不同级别的权限模式。
+You can customize the system prompt.
 
-可以自定义系统提示词。
+If you have Claude Code installed with an API Key configured, you can enable `Claude Code Mode` for enhanced coding capabilities.
 
-如果你已安装 Claude Code 并配置了 API Key，可以开启 `Claude Code 模式`以获得更强的代码能力。
+With Claude Code Mode enabled, Amon will use Claude Code's global settings and system prompts, and automatically load global Skills, etc.
 
-开启 Claude Code 模式后，Amon 将使用 Claude Code 的全局设置，并使用 Claude Code 的系统提示词，会默认加载全局的 Skills 等等。
+Once enabled, you can use Amon as a visual client for Claude Code.
 
-开启后，你可以把 Amon 当做 Claude Code 的一个可视化客户端来使用。
+![Workspaces](./screenshots/img8.png)
 
-![工作空间](./screenshots/img8.png)
-
-Amon 以工作空间（文件夹）为单位来进行工作，你可以设置多个工作空间。默认工作空间：`~/.amon/workspaces`
+Amon works on a per-workspace (folder) basis. You can set up multiple workspaces. Default workspace: `~/.amon/workspaces`
 
 ![Skills](./screenshots/img9.png)
 
-Amon 支持 Agent Skills，你可以通过安装 Skills 为 Amon 添加专业能力。
+Amon supports Agent Skills — you can install Skills to add specialized capabilities to Amon.
 
-目前内置了一些推荐技能，包括：
-- PDF 工具 — 文本提取、表单填写、文档合并
-- 前端设计 — 创建精美的 Web 界面和组件
-- 算法艺术 — 使用 p5.js 生成创意艺术作品
-- MCP 构建 — 开发 MCP 服务器
+Several recommended skills are built in, including:
+- PDF Tools — Text extraction, form filling, document merging
+- Frontend Design — Create beautiful web interfaces and components
+- Algorithmic Art — Generate creative artwork with p5.js
+- MCP Builder — Develop MCP servers
 
+## Getting Started
 
-## 快速开始
+### Installation
 
-### 安装
+Visit the [Releases](https://github.com/liruifengv/amon-agent/releases) page to download the installer for your platform.
 
-访问 [Releases](https://github.com/liruifengv/amon-agent/releases) 页面下载对应平台的安装包。
+#### Note for macOS Users
 
-#### macOS 用户注意
-
-由于应用未进行 Apple 签名，macOS 可能会阻止应用运行。下载后请在终端执行以下命令移除隔离属性：
+Since the app is not Apple-signed, macOS may block it from running. After downloading, run the following command in the terminal to remove the quarantine attribute:
 
 ```bash
 xattr -cr /Applications/Amon.app
 ```
 
-### 配置
+### Configuration
 
-Amon 提供两种使用模式，根据你的需求选择：
+Amon offers two usage modes — choose based on your needs:
 
-#### 方式一：独立模式（推荐新用户）
+#### Option 1: Standalone Mode (Recommended for New Users)
 
-首次启动后，按以下步骤配置：
+After first launch, follow these steps to configure:
 
-1. **配置 AI 供应商**
+1. **Configure AI Provider**
 
-   进入 `设置` → `供应商`，创建并启用你要使用的 AI 供应商
+   Go to `Settings` → `Providers`, create and enable the AI provider you want to use
 
-2. **创建工作空间**
+2. **Create a Workspace**
 
-   进入 `设置` → `工作空间`，创建新工作空间并选择本地文件夹作为项目根目录
+   Go to `Settings` → `Workspaces`, create a new workspace and select a local folder as the project root
 
-   默认工作空间：`~/.amon/workspaces`
+   Default workspace: `~/.amon/workspaces`
 
-3. **开始使用**
+3. **Start Using**
 
-   返回主界面，点击 `新建会话`，选择工作空间即可开始对话
+   Return to the main screen, click `New Session`, select a workspace and start chatting
 
-#### 方式二：Claude Code 模式（推荐代码开发）
+#### Option 2: Claude Code Mode (Recommended for Development)
 
-如果你已安装 [Claude Code](https://github.com/anthropics/claude-code) 并配置了 API Key，可以开启 Claude Code 模式以获得更强的代码能力。
+If you have [Claude Code](https://github.com/anthropics/claude-code) installed with an API Key configured, you can enable Claude Code Mode for enhanced coding capabilities.
 
-**开启方式**：`设置` → `Agent` → 启用 `Claude Code 模式`
+**How to enable**: `Settings` → `Agent` → Enable `Claude Code Mode`
 
-**模式对比**：
+**Mode Comparison**:
 
-| 特性 | 独立模式 | Claude Code 模式 |
-|------|---------|-----------------|
-| 提示词 | Amon 默认提示词 | 继承 Claude Code 提示词 |
-| API 配置 | 手动配置 | 优先使用 Claude Code 全局配置 |
-| Skills | 本地 Skills | 共享 Claude Code 已安装的 Skills |
-| 工具权限 | Amon 权限设置 | Claude Code 权限设置 |
-| 适用场景 | 通用对话和任务 | 代码开发和工程任务 |
+| Feature | Standalone Mode | Claude Code Mode |
+|---------|----------------|-----------------|
+| Prompts | Amon default prompts | Inherits Claude Code prompts |
+| API Config | Manual configuration | Prioritizes Claude Code global config |
+| Skills | Local Skills | Shares Claude Code installed Skills |
+| Tool Permissions | Amon permission settings | Claude Code permission settings |
+| Use Case | General chat and tasks | Code development and engineering tasks |
 
+## Development Guide
 
-## 开发指南
+### Prerequisites
 
-### 环境要求
-
-- Node.js 18+ 或 Bun 1.0+
+- Node.js 18+ or Bun 1.0+
 - macOS / Windows / Linux
 
-### 开发命令
+### Development Commands
 
 ```bash
-bun install            # 安装依赖
-bun start              # 启动开发服务器（支持热重载）
-bun run lint           # 代码检查
-bun run typecheck      # 类型检查
+bun install            # Install dependencies
+bun start              # Start dev server (with hot reload)
+bun run lint           # Lint code
+bun run typecheck      # Type check
 ```
 
-### 构建和打包
+### Build and Package
 
 ```bash
-bun run download:binaries  # 下载运行时二进制文件（bun、uv）
-bun run package            # 创建应用包（不创建安装器）
-bun run make               # 创建平台安装包
+bun run download:binaries  # Download runtime binaries (bun, uv)
+bun run package            # Create app package (no installer)
+bun run make               # Create platform installers
 ```
 
-### 项目结构
+### Project Structure
 
 ```
 amon-agent/
 ├── src/
-│   ├── main/           # Electron 主进程
-│   │   ├── agent/      # Claude SDK 集成
-│   │   ├── store/      # 状态管理和持久化
-│   │   └── ipc/        # IPC 通信处理
-│   ├── renderer/       # React 渲染进程
-│   │   ├── components/ # UI 组件
-│   │   └── store/      # 前端状态管理
-│   ├── preload/        # Preload 脚本
-│   └── shared/         # 共享类型和工具
+│   ├── main/           # Electron main process
+│   │   ├── agent/      # Claude SDK integration
+│   │   ├── store/      # State management and persistence
+│   │   └── ipc/        # IPC communication handlers
+│   ├── renderer/       # React renderer process
+│   │   ├── components/ # UI components
+│   │   └── store/      # Frontend state management
+│   ├── preload/        # Preload scripts
+│   └── shared/         # Shared types and utilities
 ├── resources/
-│   ├── skills/         # 内置 Skills
-│   ├── icons/          # 应用图标
-│   └── [bun, uv]       # 运行时二进制文件
-└── forge.config.ts     # Electron Forge 配置
+│   ├── skills/         # Built-in Skills
+│   ├── icons/          # App icons
+│   └── [bun, uv]       # Runtime binaries
+└── forge.config.ts     # Electron Forge configuration
 ```
 
-## 技术栈
+## Tech Stack
 
 <table>
 <tr>
 <td valign="top" width="50%">
 
-**核心框架**
-- Electron — 跨平台桌面应用
-- React 19 — UI 框架
-- TypeScript — 类型安全
-- Claude Agent SDK — AI 能力
+**Core Frameworks**
+- Electron — Cross-platform desktop apps
+- React 19 — UI framework
+- TypeScript — Type safety
+- Claude Agent SDK — AI capabilities
 
-**前端技术**
-- Tailwind CSS + Shadcn/ui — 界面设计
-- Zustand — 状态管理
-- Streamdown — Markdown 流式渲染
-- Motion — 动画效果
+**Frontend**
+- Tailwind CSS + Shadcn/ui — UI design
+- Zustand — State management
+- Streamdown — Streaming Markdown rendering
+- Motion — Animations
 
 </td>
 <td valign="top" width="50%">
 
-**构建工具**
-- Vite — 极速构建
-- Electron Forge — 打包分发
-- Bun — 运行时和包管理
+**Build Tools**
+- Vite — Lightning-fast builds
+- Electron Forge — Packaging and distribution
+- Bun — Runtime and package manager
 
-**数据处理**
-- Zod — 运行时类型验证
-- Shiki — 代码语法高亮
+**Data Processing**
+- Zod — Runtime type validation
+- Shiki — Code syntax highlighting
 
 </td>
 </tr>
 </table>
 
+## License
 
-## 开源协议
-
-本项目采用 [AGPL-3.0](LICENSE) 协议开源。
+This project is open-sourced under the [AGPL-3.0](LICENSE) license.
 
 ---
 
