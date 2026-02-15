@@ -48,7 +48,7 @@ jobs:
 
       # 如果有版本发布，使用 Changeset 生成的 CHANGELOG 更新 Release Notes
       - name: Update Release Notes from Changelog
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.changesets.outputs.hasChangesets == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
