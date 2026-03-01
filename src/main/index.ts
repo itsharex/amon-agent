@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, dialog, session } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import started from 'electron-squirrel-startup';
@@ -337,6 +337,26 @@ app.on('ready', async () => {
   // 语言切换时自动重建菜单
   mainI18n.on('languageChanged', () => {
     createAppMenu();
+  });
+
+  // 允许 renderer 跨域请求外部资源（图片下载等）
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const headers = { ...details.responseHeaders };
+    headers['Access-Control-Allow-Origin'] = ['*'];
+    callback({ responseHeaders: headers });
+  });
+
+  // 处理文件下载：弹出保存对话框
+  session.defaultSession.on('will-download', (_event, item) => {
+    const defaultPath = item.getFilename();
+    const result = dialog.showSaveDialogSync(mainWindow!, {
+      defaultPath,
+    });
+    if (result) {
+      item.setSavePath(result);
+    } else {
+      item.cancel();
+    }
   });
 
   createWindow();
