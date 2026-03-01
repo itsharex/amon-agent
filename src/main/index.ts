@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, dialog, session } from 'electron';
+import { app, BrowserWindow, Menu, dialog, session, shell } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import started from 'electron-squirrel-startup';
@@ -237,6 +237,15 @@ const createWindow = () => {
   if (process.env.NODE_ENV === 'development' || MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.webContents.openDevTools();
   }
+
+  // 拦截外部链接：用系统默认浏览器打开，而非在 Electron 内开新窗口
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      shell.openExternal(url);
+      return { action: 'deny' };
+    }
+    return { action: 'allow' };
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
