@@ -1,3 +1,4 @@
+---
 "amon-agent": minor
 ---
 
