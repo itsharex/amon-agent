@@ -14,6 +14,7 @@ import { EventAdapter } from './agent/event-adapter';
 import { PushService, bridgeSessionStoreToPush } from './ipc/push';
 import { SkillsStore } from './skills';
 import { registerIpcHandlers, removeIpcHandlers } from './ipc/services';
+import { handleBeforeQuit, handleWindowAllClosed, shouldHideMainWindowOnClose } from './lifecycle';
 import type { Shortcuts } from '@shared/schemas';
 import type { Session } from '@shared/types';
 
@@ -93,6 +94,7 @@ declare const SETTINGS_WINDOW_VITE_NAME: string;
 
 let mainWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
+let isQuitting = false;
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -132,6 +134,13 @@ function createWindow(): void {
       return { action: 'deny' };
     }
     return { action: 'allow' };
+  });
+
+  mainWindow.on('close', (event) => {
+    if (shouldHideMainWindowOnClose({ platform: process.platform, isQuitting })) {
+      event.preventDefault();
+      mainWindow?.hide();
+    }
   });
 
   mainWindow.on('closed', () => {
@@ -427,13 +436,28 @@ app.on('ready', async () => {
 });
 
 app.on('window-all-closed', () => {
-  removeIpcHandlers();
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  handleWindowAllClosed({
+    platform: process.platform,
+    quit: () => app.quit(),
+    removeIpcHandlers,
+  });
+});
+
+app.on('before-quit', () => {
+  isQuitting = true;
+  handleBeforeQuit(removeIpcHandlers);
 });
 
 app.on('activate', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.show();
+    mainWindow.focus();
+    return;
+  }
+
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
