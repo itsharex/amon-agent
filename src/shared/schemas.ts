@@ -1,11 +1,45 @@
 import { z } from 'zod';
-import { DEFAULT_MAX_THINKING_TOKENS, DEFAULT_SYSTEM_PROMPT } from './constants';
 
-// ==================== 权限模式 Schema ====================
+// ==================== Provider 配置 Schema ====================
 
-export const PermissionModeSchema = z.enum(['default', 'acceptEdits', 'dontAsk', 'bypassPermissions']);
+export const ProviderConfigSchema = z.object({
+  id: z.string(),
+  apiType: z.string().default('openai-completions'),  // Api: 'anthropic-messages' | 'openai-completions' | 'openai-responses' | 'google-generative-ai'
+  provider: z.string().default(''),                     // Provider: 'anthropic' | 'openai' | 'google' | ...
+  icon: z.string().default(''),
+  name: z.string().min(1),
+  apiKey: z.string().default(''),
+  baseUrl: z.string().optional(),
+  modelId: z.string().default(''),
+});
 
-export type PermissionMode = z.infer<typeof PermissionModeSchema>;
+export type ProviderConfig = z.infer<typeof ProviderConfigSchema>;
+
+// ==================== Agent 配置 Schema ====================
+
+export const AgentSettingsSchema = z.object({
+  activeProviderId: z.string().default('anthropic'),
+  activeModelId: z.string().default('claude-sonnet-4-20250514'),
+  maxTurns: z.number().default(50),
+  thinkingLevel: z.enum(['off', 'low', 'medium', 'high', 'xhigh']).default('medium'),
+  providerConfigs: z.array(ProviderConfigSchema).default([]),
+  exaApiKey: z.string().default(''),
+});
+
+export type AgentSettings = z.infer<typeof AgentSettingsSchema>;
+
+export const DEFAULT_AGENT_SETTINGS: AgentSettings = AgentSettingsSchema.parse({});
+
+// ==================== 工作空间 Schema ====================
+
+export const WorkspaceSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  path: z.string().min(1),
+  isDefault: z.boolean().default(false),
+});
+
+export type Workspace = z.infer<typeof WorkspaceSchema>;
 
 // ==================== 快捷键 Schema ====================
 
@@ -16,168 +50,170 @@ export const ShortcutsSchema = z.object({
 
 export type Shortcuts = z.infer<typeof ShortcutsSchema>;
 
-export const DEFAULT_SHORTCUTS: Shortcuts = {
-  newSession: 'CmdOrCtrl+N',
-  openSettings: 'CmdOrCtrl+,',
-};
+export const DEFAULT_SHORTCUTS: Shortcuts = ShortcutsSchema.parse({});
 
-// ==================== 工作空间 Schema ====================
+// ==================== Skills 配置 Schema ====================
 
-export const WorkspaceSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, '工作空间名称不能为空'),
-  path: z.string().min(1, '工作空间路径不能为空'),
-  isDefault: z.boolean().default(false),
+export const SkillsSettingsSchema = z.object({
+  /** 额外的 skill 搜索目录名（如 ".claude"），每个条目同时扫描系统级和项目级 */
+  extraDirs: z.array(z.string()).default(['.claude']),
+  /** 已禁用的技能名称列表 */
+  disabledSkills: z.array(z.string()).default([]),
+  /** 是否已完成首次内置技能安装 */
+  initialized: z.boolean().default(false),
 });
 
-export type Workspace = z.infer<typeof WorkspaceSchema>;
-
-// ==================== Provider Schema ====================
-
-export const ProviderSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, 'Provider 名称不能为空'),
-  apiUrl: z.string().min(1, 'API URL 不能为空'),
-  apiKey: z.string().min(1, 'API Key 不能为空'),
-  model: z.string().min(1, '模型名称不能为空'),
-});
-
-export type Provider = z.infer<typeof ProviderSchema>;
-
-// ==================== Agent 配置 Schema ====================
-
-export const AgentSchema = z.object({
-  // Provider 列表
-  providers: z.array(ProviderSchema).default([]),
-
-  // 当前选中的 Provider ID
-  activeProviderId: z.string().nullable().default(null),
-
-  // 系统提示词（追加到 SDK 预设提示词后）
-  // 空字符串视为未设置，使用默认提示词
-  systemPrompt: z.preprocess(
-    (val) => (val === '' ? undefined : val),
-    z.string().default(DEFAULT_SYSTEM_PROMPT)
-  ),
-
-  // 权限模式
-  permissionMode: PermissionModeSchema.default('default'),
-
-  // 最大轮数（不暴露 UI）
-  maxTurns: z.number().default(50),
-
-  // 最大思考 token 数（不暴露 UI）
-  maxThinkingTokens: z.number().default(DEFAULT_MAX_THINKING_TOKENS),
-
-  // 可用的工具（不暴露 UI）
-  tools: z.array(z.string()).optional(),
-
-  // 允许的工具（不暴露 UI）
-  allowedTools: z.array(z.string()).optional(),
-
-  // Claude Code 模式：开启后继承 Claude Code 配置
-  claudeCodeMode: z.boolean().default(false),
-});
-
-export type AgentSettings = z.infer<typeof AgentSchema>;
-
-export const DEFAULT_AGENT_SETTINGS: AgentSettings = {
-  providers: [],
-  activeProviderId: null,
-  systemPrompt: DEFAULT_SYSTEM_PROMPT,
-  permissionMode: 'default',
-  maxTurns: 100,
-  maxThinkingTokens: DEFAULT_MAX_THINKING_TOKENS,
-  claudeCodeMode: false,
-};
+export type SkillsSettings = z.infer<typeof SkillsSettingsSchema>;
 
 // ==================== 设置 Schema ====================
 
 export const SettingsSchema = z.object({
-  // 主题
   theme: z.enum(['light', 'dark', 'system']).default('system'),
-
-  // 语言
   language: z.enum(['en', 'zh']).default('en'),
-
-  // 快捷键配置
+  chatWidth: z.enum(['narrow', 'wide']).default('narrow'),
   shortcuts: ShortcutsSchema.default(DEFAULT_SHORTCUTS),
-
-  // 保存的工作空间列表
   workspaces: z.array(WorkspaceSchema).default([]),
-
-  // Agent 配置
-  agent: AgentSchema.default(DEFAULT_AGENT_SETTINGS),
+  agent: AgentSettingsSchema.default(DEFAULT_AGENT_SETTINGS),
+  skills: SkillsSettingsSchema.default({ extraDirs: ['.claude'], disabledSkills: [], initialized: false }),
 });
-
-// ==================== 类型导出 ====================
 
 export type Settings = z.infer<typeof SettingsSchema>;
 
-// 默认设置
-export const DEFAULT_SETTINGS: Settings = {
-  theme: 'system',
-  language: 'en',
-  shortcuts: DEFAULT_SHORTCUTS,
-  workspaces: [],
-  agent: DEFAULT_AGENT_SETTINGS,
+export const DEFAULT_SETTINGS: Settings = SettingsSchema.parse({});
+
+// ==================== 设置迁移 ====================
+
+/** Provider type → apiType 映射 */
+const TYPE_TO_API_TYPE: Record<string, string> = {
+  anthropic: 'anthropic-messages',
+  openai: 'openai-completions',
+  'openai-responses': 'openai-responses',
+  gemini: 'google-generative-ai',
 };
+
+/** Provider id → provider 映射 */
+const ID_TO_PROVIDER: Record<string, string> = {
+  anthropic: 'anthropic',
+  openai: 'openai',
+  google: 'google',
+  deepseek: 'openai',   // DeepSeek uses OpenAI-compatible API
+};
+
+/**
+ * Migrate old settings format to new format.
+ */
+function migrateSettings(data: unknown): unknown {
+  if (!data || typeof data !== 'object') return data;
+  const raw = { ...(data as Record<string, unknown>) };
+
+  // Deep-clone agent to avoid mutating input
+  if (raw.agent && typeof raw.agent === 'object') {
+    raw.agent = { ...(raw.agent as Record<string, unknown>) };
+  }
+
+  const agent = (raw.agent || {}) as Record<string, unknown>;
+
+  // Migrate old top-level `providers[]` → `agent.providerConfigs[]`
+  if (Array.isArray(raw.providers) && !agent.providerConfigs) {
+    agent.providerConfigs = (raw.providers as Record<string, unknown>[]).map(p => ({
+      id: ((p.id as string) || '').toLowerCase(),
+      name: (p.id as string) || (p.name as string) || '',
+      apiKey: (p.apiKey as string) || '',
+      ...(p.baseUrl ? { baseUrl: p.baseUrl as string } : {}),
+    }));
+    delete raw.providers;
+  }
+
+  // Migrate `agent.provider` → `agent.activeProviderId`
+  if (agent.provider && !agent.activeProviderId) {
+    agent.activeProviderId = (agent.provider as string).toLowerCase();
+  }
+  delete agent.provider;
+
+  // Migrate `agent.model` → `agent.activeModelId`
+  if (agent.model && !agent.activeModelId) {
+    agent.activeModelId = agent.model;
+  }
+  delete agent.model;
+
+  // Remove old agent fields that don't exist in new schema
+  delete agent.thinkingBudget;
+  delete agent.customSystemPrompt;
+
+  // Migrate thinkingLevel: 'minimal' → 'low'
+  if (agent.thinkingLevel === 'minimal') {
+    agent.thinkingLevel = 'low';
+  }
+
+  raw.agent = agent;
+
+  // Migrate workspaces: add `id` if missing
+  if (Array.isArray(raw.workspaces)) {
+    raw.workspaces = (raw.workspaces as Record<string, unknown>[]).map((w, i) => ({
+      ...w,
+      id: w.id || `ws_${i}`,
+      isDefault: w.isDefault ?? false,
+    }));
+  }
+
+  // Remove old top-level fields
+  delete raw.defaultWorkspace;
+
+  // Migrate provider configs: old `type` → new `apiType`+`provider`
+  if (Array.isArray(agent.providerConfigs)) {
+    const activeModelId = (agent.activeModelId as string) || '';
+    const activeProviderId = (agent.activeProviderId as string) || '';
+
+    agent.providerConfigs = (agent.providerConfigs as Record<string, unknown>[]).map(c => {
+      // Already migrated to new format
+      if (c.apiType) return c;
+
+      const id = (c.id as string) || '';
+      const oldType = (c.type as string) || 'openai';
+
+      // Convert old type → apiType
+      const apiType = TYPE_TO_API_TYPE[oldType] || 'openai-completions';
+
+      // Determine provider from id
+      const provider = ID_TO_PROVIDER[id] || id;
+
+      // Determine icon
+      let icon = (c.icon as string) || '';
+      if (!icon) {
+        if (id === 'anthropic') icon = 'Anthropic';
+        else if (id === 'openai') icon = 'OpenAI';
+        else if (id === 'google') icon = 'Gemini';
+        else if (id === 'deepseek') icon = 'DeepSeek';
+      }
+
+      // Remove old fields
+      const { type: _type, extraParams: _extra, customHeaders: _headers, ...rest } = c;
+      void _type;
+      void _extra;
+      void _headers;
+
+      return {
+        ...rest,
+        apiType,
+        provider,
+        icon,
+        modelId: c.modelId || (id === activeProviderId ? activeModelId : ''),
+      };
+    });
+  }
+
+  return raw;
+}
 
 // ==================== 校验函数 ====================
 
-/**
- * 校验并解析设置，返回校验后的设置对象
- * 如果校验失败，使用默认值填充
- */
 export function parseSettings(data: unknown): Settings {
-  const result = SettingsSchema.safeParse(data);
+  // First try to migrate old format
+  const migrated = migrateSettings(data);
 
-  if (result.success) {
-    return result.data;
-  }
+  const result = SettingsSchema.safeParse(migrated);
+  if (result.success) return result.data;
 
-  // 校验失败时，尝试部分解析并合并默认值
-  console.warn('Settings validation failed:', result.error.flatten());
-
-  // 如果是对象，尝试逐个字段校验
-  if (data && typeof data === 'object') {
-    const partialData = data as Record<string, unknown>;
-    const merged: Record<string, unknown> = { ...DEFAULT_SETTINGS };
-
-    // 逐个字段尝试校验
-    for (const key of Object.keys(SettingsSchema.shape)) {
-      if (key in partialData) {
-        const fieldSchema = SettingsSchema.shape[key as keyof typeof SettingsSchema.shape];
-        const fieldResult = fieldSchema.safeParse(partialData[key]);
-        if (fieldResult.success) {
-          merged[key] = fieldResult.data;
-        }
-      }
-    }
-
-    return merged as Settings;
-  }
-
+  console.warn('Settings validation failed, using defaults', result.error.issues);
   return DEFAULT_SETTINGS;
-}
-
-/**
- * 校验设置更新，返回校验结果
- */
-export function validateSettingsUpdate(
-  updates: Partial<Settings>
-): { success: true; data: Partial<Settings> } | { success: false; errors: { field: string; message: string }[] } {
-  const partialSchema = SettingsSchema.partial();
-  const result = partialSchema.safeParse(updates);
-
-  if (result.success) {
-    return { success: true, data: result.data };
-  }
-
-  const errors = result.error.issues.map((err) => ({
-    field: err.path.map(String).join('.'),
-    message: err.message,
-  }));
-
-  return { success: false, errors };
 }

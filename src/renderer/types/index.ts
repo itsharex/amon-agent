@@ -1,154 +1,72 @@
-// 从 shared 重新导出共享类型
+// ==================== 从 shared 重新导出类型 ====================
+
 export type {
-  Session,
-  Message,
-  MessageContentBlock,
-  ToolCall,
-  ToolCallStatus,
-  Settings,
-  AgentSettings,
-  Shortcuts,
-  PermissionMode,
-  Workspace,
-  Provider,
-  SDKMessageType,
-  SDKMessage,
-  SDKUsage,
-  TokenUsage,
-  ContentBlock,
-  StreamEvent,
-  ToolPermissionRequest,
-  PermissionResult,
-  PermissionResultAllow,
-  PermissionResultDeny,
-  PermissionRecord,
-  AskUserQuestion,
-  AskUserQuestionOption,
-  AskUserQuestionInput,
-  AskUserQuestionRequest,
-  AskUserQuestionResponse,
-  UserQuestionRecord,
-  Skill,
-  SkillMetadata,
-  SkillSource,
-  SkillsLoadResult,
-  WorkspaceSkills,
-  RecommendedSkill,
-  SkillInstallTarget,
-  MessageOptions,
-  SettingsSetResult,
-  MessageCompleteData,
   ImageAttachment,
   ImageMimeType,
-  FileInfo,
-} from '../../shared/types';
-
-// 导出常量
-export { DEFAULT_SETTINGS, DEFAULT_SHORTCUTS, DEFAULT_AGENT_SETTINGS } from '../../shared/types';
-
-import type {
   Session,
-  Settings,
-  Message,
-  ToolPermissionRequest,
-  PermissionResult,
-  AskUserQuestionRequest,
-  SkillsLoadResult,
-  RecommendedSkill,
-  SkillInstallTarget,
-  MessageOptions,
-  SettingsSetResult,
-  MessageCompleteData,
-  ImageAttachment,
+  SessionState,
+  AgentRunState,
+  ToolExecutionState,
   FileInfo,
 } from '../../shared/types';
 
-export interface ElectronAPI {
-  agent: {
-    sendMessage: (prompt: string, sessionId: string, options?: MessageOptions, images?: ImageAttachment[]) => Promise<{ success: boolean; error?: string }>;
-    interrupt: (sessionId: string) => Promise<{ success: boolean; error?: string }>;
-    onMessagesUpdated: (callback: (data: { sessionId: string; messages: Message[] }) => void) => void;
-    offMessagesUpdated: (callback: (data: { sessionId: string; messages: Message[] }) => void) => void;
-    onMessageState: (callback: (data: { sessionId: string; isLoading: boolean }) => void) => void;
-    offMessageState: (callback: (data: { sessionId: string; isLoading: boolean }) => void) => void;
-    onMessageComplete: (callback: (data: MessageCompleteData) => void) => void;
-    offMessageComplete: (callback: (data: MessageCompleteData) => void) => void;
-    onMessageError: (callback: (data: { sessionId: string; error: string }) => void) => void;
-    offMessageError: (callback: (data: { sessionId: string; error: string }) => void) => void;
-  };
-  session: {
-    list: () => Promise<Session[]>;
-    create: (params?: string | { name?: string; workspace?: string }) => Promise<Session>;
-    delete: (sessionId: string) => Promise<boolean>;
-    rename: (sessionId: string, name: string) => Promise<Session | null>;
-    updateWorkspace: (sessionId: string, workspace: string) => Promise<{ success: boolean; session?: Session }>;
-    getMessages: (sessionId: string) => Promise<Message[]>;
-    getLoadingStates: () => Promise<Record<string, boolean>>;
-    onCreated: (callback: (session: Session) => void) => void;
-    offCreated: (callback: (session: Session) => void) => void;
-    onDeleted: (callback: (data: { sessionId: string }) => void) => void;
-    offDeleted: (callback: (data: { sessionId: string }) => void) => void;
-    onUpdated: (callback: (session: Session) => void) => void;
-    offUpdated: (callback: (session: Session) => void) => void;
-    onSdkSessionId: (callback: (data: { sessionId: string; sdkSessionId: string }) => void) => void;
-    offSdkSessionId: (callback: (data: { sessionId: string; sdkSessionId: string }) => void) => void;
-  };
-  settings: {
-    get: () => Promise<Settings>;
-    set: (settings: Partial<Settings>) => Promise<SettingsSetResult>;
-    onChange: (callback: (settings: Settings) => void) => void;
-    offChange: (callback: (settings: Settings) => void) => void;
-  };
-  window: {
-    openSettings: () => Promise<{ success: boolean }>;
-    closeSettings: () => Promise<{ success: boolean }>;
-  };
-  shell: {
-    openConfigDir: () => Promise<{ success: boolean }>;
-    openPath: (path: string) => Promise<{ success: boolean }>;
-    openExternal: (url: string) => Promise<{ success: boolean }>;
-  };
-  dialog: {
-    selectFolder: () => Promise<{ success: boolean; path: string | null }>;
-    selectImages: () => Promise<{ success: boolean; images: ImageAttachment[] }>;
-    confirm: (options: { title: string; message: string; detail?: string }) => Promise<{ confirmed: boolean }>;
-  };
-  shortcuts: {
-    onNewSession: (callback: () => void) => void;
-    offNewSession: (callback: () => void) => void;
-  };
-  permission: {
-    respond: (requestId: string, result: PermissionResult) => Promise<{ success: boolean }>;
-    onRequest: (callback: (request: ToolPermissionRequest) => void) => void;
-    offRequest: (callback: (request: ToolPermissionRequest) => void) => void;
-  };
-  askUserQuestion: {
-    respond: (requestId: string, answers: Record<string, string>) => Promise<{ success: boolean }>;
-    onRequest: (callback: (request: AskUserQuestionRequest) => void) => void;
-    offRequest: (callback: (request: AskUserQuestionRequest) => void) => void;
-  };
-  cli: {
-    onSessionCreated: (callback: (data: { sessionId: string }) => void) => void;
-    offSessionCreated: (callback: (data: { sessionId: string }) => void) => void;
-  };
-  skills: {
-    load: () => Promise<SkillsLoadResult>;
-    listRecommended: () => Promise<RecommendedSkill[]>;
-    install: (skillId: string, target: SkillInstallTarget, workspacePath?: string) => Promise<{ success: boolean; error?: string }>;
-    uninstall: (skillPath: string) => Promise<{ success: boolean; error?: string }>;
-  };
-  workspace: {
-    listFiles: (sessionId: string, query?: string, limit?: number) => Promise<{ success: boolean; files: FileInfo[] }>;
-    validatePaths: (sessionId: string, paths: string[]) => Promise<{ success: boolean; validPaths: string[] }>;
-  };
-  app: {
-    getVersion: () => Promise<{ success: boolean; version: string }>;
-  };
+// 从 ai 类型重新导出（经由 shared/types）
+export type {
+  TextContent,
+  ThinkingContent,
+  ImageContent,
+  ToolCall,
+  UserMessage,
+  AssistantMessage,
+  ToolResultMessage,
+  Message,
+  Usage,
+  StopReason,
+} from '../../ai/types';
+
+export type {
+  ProviderConfig,
+  AgentSettings,
+  Settings,
+  Workspace,
+  Shortcuts,
+} from '../../shared/schemas';
+
+export {
+  DEFAULT_SETTINGS,
+  DEFAULT_AGENT_SETTINGS,
+  DEFAULT_SHORTCUTS,
+} from '../../shared/schemas';
+
+// ==================== Window 类型声明 ====================
+
+import type { PushEventMap } from '../../shared/ipc-types';
+export type { PushEventMap };
+
+// IPC Proxy 类型 — 由 preload 中的 createProxy 生成
+type IpcProxy = Record<string, (...args: any[]) => Promise<any>>;
+
+export interface IpcAPI {
+  agent: IpcProxy;
+  session: IpcProxy;
+  settings: IpcProxy;
+  system: IpcProxy;
+  workspace: IpcProxy;
+  dialog: IpcProxy;
+  skills: IpcProxy;
+}
+
+export interface PushAPI {
+  on: <K extends keyof PushEventMap>(
+    channel: K,
+    callback: (data: PushEventMap[K]) => void,
+  ) => () => void;
 }
 
 // 扩展 Window 类型
 declare global {
   interface Window {
-    electronAPI: ElectronAPI;
+    ipc: IpcAPI;
+    push: PushAPI;
   }
 }

@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../../store/settingsStore';
-import SystemPromptEditor from './SystemPromptEditor';
-import type { PermissionMode } from '../../types';
-import { Shield, FileEdit, XCircle, ShieldOff, Terminal } from 'lucide-react';
+
+import ProviderIcon from '../Settings/ProviderIcon';
+
+const THINKING_LEVELS = [
+  { value: 'off', label: 'Off' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+  { value: 'xhigh', label: 'X-High' },
+] as const;
 
 interface AgentSettingsProps {
   onNavigateToProvider?: () => void;
@@ -12,100 +19,198 @@ interface AgentSettingsProps {
 const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) => {
   const { formData, setAgentFormData, clearSaveError } = useSettingsStore();
   const { t } = useTranslation(['settings', 'common']);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const PERMISSION_MODES: { value: PermissionMode; label: string; description: string; icon: React.ReactNode }[] = [
-    { value: 'default', label: t('settings:agent.default'), description: t('settings:agent.defaultDesc'), icon: <Shield className="w-6 h-6" /> },
-    { value: 'acceptEdits', label: t('settings:agent.acceptEdits'), description: t('settings:agent.acceptEditsDesc'), icon: <FileEdit className="w-6 h-6" /> },
-    { value: 'dontAsk', label: t('settings:agent.dontAsk'), description: t('settings:agent.dontAskDesc'), icon: <XCircle className="w-6 h-6" /> },
-    { value: 'bypassPermissions', label: t('settings:agent.bypassPermissions'), description: t('settings:agent.bypassPermissionsDesc'), icon: <ShieldOff className="w-6 h-6" /> },
-  ];
+  const { activeProviderId, thinkingLevel, maxTurns, providerConfigs } = formData.agent;
 
-  // 获取当前激活的 Provider
-  const providers = formData.agent.providers || [];
-  const activeProvider = providers.find(p => p.id === formData.agent.activeProviderId);
+  const configuredProviders = (providerConfigs || [])
+    .filter(c => c.apiKey?.trim());
+
+  const activeProvider = configuredProviders.find(c => c.id === activeProviderId);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleProviderChange = (providerId: string) => {
+    clearSaveError();
+    const selected = providerConfigs?.find(c => c.id === providerId);
+    setAgentFormData({
+      activeProviderId: providerId,
+      activeModelId: selected?.modelId || '',
+    });
+    setOpen(false);
+  };
+
+  const handleThinkingLevelChange = (level: string) => {
+    clearSaveError();
+    setAgentFormData({ thinkingLevel: level as typeof thinkingLevel });
+  };
+
+  const handleMaxTurnsChange = (value: string) => {
+    clearSaveError();
+    const num = parseInt(value, 10);
+    if (!isNaN(num) && num > 0) {
+      setAgentFormData({ maxTurns: num });
+    }
+  };
+
+  const hasNoProviders = configuredProviders.length === 0;
 
   return (
     <div className="space-y-6">
-      {/* 当前供应商 */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <span>{t('settings:agent.currentProvider')}:</span>
-          {activeProvider ? (
-            <span className="text-primary font-medium">{activeProvider.name}</span>
-          ) : (
-            <span className="text-warning">{t('common:notConfigured')}</span>
+      {/* No provider configured warning */}
+      {hasNoProviders && (
+        <div className="p-4 bg-warning/10 border border-warning/30 rounded-lg">
+          <p className="text-sm text-warning">
+            {t('settings:agent.noProviderConfigured')}
+          </p>
+          <button
+            onClick={onNavigateToProvider}
+            className="mt-2 text-xs text-primary hover:text-primary/80"
+          >
+            {t('settings:agent.goToProviderSettings')}
+          </button>
+        </div>
+      )}
+
+      {/* Provider selection - custom dropdown with icons */}
+      {!hasNoProviders && (
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {t('settings:agent.provider')}
+        </label>
+        <div className="relative" ref={ref}>
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg border border-border
+                       bg-background text-foreground hover:border-foreground/30
+                       focus:ring-2 focus:ring-primary focus:border-primary
+                       outline-none transition-colors cursor-pointer"
+          >
+            {activeProvider ? (
+              <>
+                <ProviderIcon icon={activeProvider.icon} size={18} />
+                <div className="flex-1 text-left min-w-0">
+                  <span className="font-medium">{activeProvider.name}</span>
+                  {activeProvider.modelId && (
+                    <span className="text-muted-foreground ml-2 text-xs">{activeProvider.modelId}</span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <span className="text-muted-foreground">{activeProviderId || t('common:notConfigured')}</span>
+            )}
+            <svg className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+            </svg>
+          </button>
+
+          {open && configuredProviders.length > 0 && (
+            <div className="absolute z-50 mt-1 w-full bg-popover border border-border rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
+              {configuredProviders.map((provider) => (
+                <button
+                  key={provider.id}
+                  type="button"
+                  onClick={() => handleProviderChange(provider.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors cursor-pointer ${
+                    activeProviderId === provider.id
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-foreground hover:bg-accent'
+                  }`}
+                >
+                  <ProviderIcon icon={provider.icon} size={18} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{provider.name}</div>
+                    {provider.modelId && (
+                      <div className="text-xs text-muted-foreground truncate">{provider.modelId}</div>
+                    )}
+                  </div>
+                  {activeProviderId === provider.id && (
+                    <svg className="w-4 h-4 text-primary shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
           )}
         </div>
-        <button
-          onClick={onNavigateToProvider}
-          className="text-xs text-primary hover:text-primary/80"
-        >
-          {t('common:change')}
-        </button>
       </div>
+      )}
 
-      {/* 权限模式 */}
+      {/* Thinking Level */}
       <div>
-        <label className="block text-sm font-medium text-foreground mb-3">
-          {t('settings:agent.permissionMode')}
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {t('settings:agent.thinkingLevel')}
         </label>
-        <div className="grid grid-cols-4 gap-3">
-          {PERMISSION_MODES.map((mode) => (
+        <div className="flex gap-2">
+          {THINKING_LEVELS.map((level) => (
             <button
-              key={mode.value}
-              onClick={() => {
-                clearSaveError();
-                setAgentFormData({ permissionMode: mode.value });
-              }}
+              key={level.value}
+              onClick={() => handleThinkingLevelChange(level.value)}
               className={`
-                flex flex-col items-center gap-2 p-4 rounded-xl cursor-pointer
-                border-2 transition-all duration-150
-                ${(formData.agent.permissionMode || 'default') === mode.value
-                  ? 'border-primary bg-primary/10 text-primary'
+                flex-1 px-3 py-2 text-sm rounded-lg border-2 transition-all duration-150
+                ${thinkingLevel === level.value
+                  ? 'border-primary bg-primary/10 text-primary font-medium'
                   : 'border-border text-muted-foreground hover:bg-accent'}
               `}
             >
-              {mode.icon}
-              <span className="text-sm font-medium">{mode.label}</span>
-              <span className="text-xs text-center opacity-70">{mode.description}</span>
+              {t(`settings:agent.thinking_${level.value}`)}
             </button>
           ))}
         </div>
       </div>
 
-      {/* 系统提示词 */}
-      <SystemPromptEditor />
+      {/* Max Turns */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {t('settings:agent.maxTurns')}
+        </label>
+        <input
+          type="number"
+          value={maxTurns}
+          onChange={(e) => handleMaxTurnsChange(e.target.value)}
+          min={1}
+          max={200}
+          className="w-24 px-3 py-2 text-sm border border-border rounded-lg
+                     bg-background text-foreground
+                     focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          {t('settings:agent.maxTurnsHint')}
+        </p>
+      </div>
 
-      {/* Claude Code 模式 */}
-      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-        <div className="flex items-center gap-3">
-          <Terminal className="w-5 h-5 text-muted-foreground" />
-          <div>
-            <h3 className="text-sm font-medium text-foreground">{t('settings:agent.claudeCodeMode')}</h3>
-            <p className="text-xs text-muted-foreground">
-              {t('settings:agent.claudeCodeModeDesc')}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => {
+      {/* Exa API Key */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {t('settings:agent.exaApiKey')}
+        </label>
+        <input
+          type="password"
+          value={formData.agent.exaApiKey || ''}
+          onChange={(e) => {
             clearSaveError();
-            setAgentFormData({ claudeCodeMode: !formData.agent.claudeCodeMode });
+            setAgentFormData({ exaApiKey: e.target.value });
           }}
-          className={`
-            relative inline-flex h-6 w-11 items-center rounded-full transition-colors
-            ${formData.agent.claudeCodeMode
-              ? 'bg-primary'
-              : 'bg-muted-foreground/30'}
-          `}
-        >
-          <span
-            className={`
-              inline-block h-4 w-4 transform rounded-full bg-white transition-transform
-              ${formData.agent.claudeCodeMode ? 'translate-x-6' : 'translate-x-1'}
-            `}
-          />
-        </button>
+          placeholder="(optional)"
+          className="w-full px-3 py-2 text-sm border border-border rounded-lg
+                     bg-background text-foreground
+                     focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          {t('settings:agent.exaApiKeyHint')}
+        </p>
       </div>
     </div>
   );

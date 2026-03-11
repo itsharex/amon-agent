@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Session } from '../types';
+import type { Session } from '../types';
 
 interface SessionState {
   sessions: Session[];
@@ -10,13 +10,11 @@ interface SessionState {
   setSessions: (sessions: Session[]) => void;
   setCurrentSessionId: (id: string | null) => void;
   loadSessions: () => Promise<void>;
-  createSession: (name?: string, workspace?: string) => Promise<Session>;
+  createSession: (workspace?: string) => Promise<Session>;
   deleteSession: (id: string) => Promise<void>;
-  renameSession: (id: string, name: string) => Promise<void>;
+  renameSession: (id: string, title: string) => Promise<void>;
   updateSessionWorkspace: (id: string, workspace: string) => Promise<void>;
   loadCurrentSession: () => Promise<Session | null>;
-  updateSdkSessionId: (sessionId: string, sdkSessionId: string) => Promise<void>;
-  getCurrentSdkSessionId: () => string | undefined;
   getCurrentWorkspace: () => string | undefined;
 }
 
@@ -32,7 +30,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   loadSessions: async () => {
     set({ isLoading: true });
     try {
-      const sessions = await window.electronAPI.session.list();
+      const sessions = await window.ipc.session.list();
       set({ sessions, isLoading: false });
 
       // 如果没有当前会话，且有会话列表，选择第一个
@@ -46,15 +44,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
 
-  createSession: async (name, workspace) => {
+  createSession: async (workspace?) => {
     try {
-      const session = await window.electronAPI.session.create(
-        workspace ? { name, workspace } : name
-      );
-      set((state) => ({
-        sessions: [session, ...state.sessions],
-        currentSessionId: session.id,
-      }));
+      // Only send IPC — the push:sessionCreated event in App.tsx
+      // handles adding the session to state (with dedup).
+      const session = await window.ipc.session.create(workspace);
       return session;
     } catch (error) {
       console.error('Failed to create session:', error);
@@ -64,34 +58,19 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   deleteSession: async (id) => {
     try {
-      await window.electronAPI.session.delete(id);
-      set((state) => {
-        const newSessions = state.sessions.filter((s) => s.id !== id);
-        const newCurrentId =
-          state.currentSessionId === id
-            ? newSessions[0]?.id || null
-            : state.currentSessionId;
-        return {
-          sessions: newSessions,
-          currentSessionId: newCurrentId,
-        };
-      });
+      // Only send IPC — the push:sessionDeleted event in App.tsx
+      // handles removing from state.
+      await window.ipc.session.delete(id);
     } catch (error) {
       console.error('Failed to delete session:', error);
       throw error;
     }
   },
 
-  renameSession: async (id, name) => {
+  renameSession: async (id, title) => {
     try {
-      const updated = await window.electronAPI.session.rename(id, name);
-      if (updated) {
-        set((state) => ({
-          sessions: state.sessions.map((s) =>
-            s.id === id ? { ...s, name } : s
-          ),
-        }));
-      }
+      // push:sessionUpdated in App.tsx handles state update
+      await window.ipc.session.rename(id, title);
     } catch (error) {
       console.error('Failed to rename session:', error);
       throw error;
@@ -100,14 +79,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   updateSessionWorkspace: async (id, workspace) => {
     try {
-      const result = await window.electronAPI.session.updateWorkspace(id, workspace);
-      if (result.success) {
-        set((state) => ({
-          sessions: state.sessions.map((s) =>
-            s.id === id ? { ...s, workspace } : s
-          ),
-        }));
-      }
+      // push:sessionUpdated in App.tsx handles state update
+      await window.ipc.session.updateWorkspace(id, workspace);
     } catch (error) {
       console.error('Failed to update session workspace:', error);
       throw error;
@@ -118,22 +91,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const { currentSessionId, sessions } = get();
     if (!currentSessionId) return null;
     return sessions.find((s) => s.id === currentSessionId) ?? null;
-  },
-
-  updateSdkSessionId: async (sessionId: string, sdkSessionId: string) => {
-    // 更新 sessions 列表（主进程已经处理了持久化）
-    set((state) => ({
-      sessions: state.sessions.map((s) =>
-        s.id === sessionId ? { ...s, sdkSessionId } : s
-      ),
-    }));
-  },
-
-  getCurrentSdkSessionId: () => {
-    const { currentSessionId, sessions } = get();
-    if (!currentSessionId) return undefined;
-    const session = sessions.find((s) => s.id === currentSessionId);
-    return session?.sdkSessionId;
   },
 
   getCurrentWorkspace: () => {

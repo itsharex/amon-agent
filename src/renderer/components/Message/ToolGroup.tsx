@@ -1,42 +1,34 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ChevronRight, Wrench } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { MessageContentBlock } from '../../types';
+import type { ToolCall } from '../../types';
 import ToolCallBlock from './ContentBlocks/ToolCallBlock';
 
 export interface ToolGroupProps {
-  blocks: MessageContentBlock[];
+  blocks: ToolCall[];
   isStreaming?: boolean;
-  /** Whether the group should be collapsed by default (for historical messages) */
   defaultCollapsed?: boolean;
+  sessionId: string | null;
 }
 
 /**
  * 工具调用组容器 - 支持折叠和自动滚动
  */
-const ToolGroup: React.FC<ToolGroupProps> = ({ blocks, isStreaming, defaultCollapsed = false }) => {
+const ToolGroup: React.FC<ToolGroupProps> = ({ blocks, isStreaming, defaultCollapsed = false, sessionId }) => {
   const { t } = useTranslation('message');
   const [isExpanded, setIsExpanded] = useState(!defaultCollapsed);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 流式输出时自动滚动到底部
   useEffect(() => {
     if (containerRef.current && isStreaming && isExpanded) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [blocks.length, isStreaming, isExpanded]);
 
-  // 过滤出 tool_call 类型的块
-  const toolCallBlocks = blocks.filter(
-    (block): block is MessageContentBlock & { type: 'tool_call' } =>
-      block.type === 'tool_call'
-  );
-
-  if (toolCallBlocks.length === 0) return null;
+  if (blocks.length === 0) return null;
 
   return (
     <div className="my-3 rounded-lg border border-border bg-muted/50 overflow-hidden">
-      {/* 折叠标题 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-tool-foreground hover:text-tool hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
@@ -52,18 +44,17 @@ const ToolGroup: React.FC<ToolGroupProps> = ({ blocks, isStreaming, defaultColla
           )}
         </span>
         <span className="text-xs opacity-60 ml-auto">
-          {t('tool.toolCount', { count: toolCallBlocks.length })}
+          {t('tool.toolCount', { count: blocks.length })}
         </span>
       </button>
 
-      {/* 工具调用列表 */}
       {isExpanded && (
         <div
           ref={containerRef}
           className="p-2 space-y-2 border-t border-border max-h-96 overflow-y-auto"
         >
-          {toolCallBlocks.map((block) => (
-            <ToolCallBlock key={`tool-${block.toolCall.id}`} toolCall={block.toolCall} />
+          {blocks.map((block) => (
+            <ToolCallBlock key={`tool-${block.id}`} toolCall={block} sessionId={sessionId} />
           ))}
         </div>
       )}

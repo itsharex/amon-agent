@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "allowJs": true,
     "skipLibCheck": true,
+    "types": ["node"],
     "esModuleInterop": true,
     "noImplicitAny": true,
     "strict": true,
@@ -15,12 +16,14 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "paths": {
       "@/*": ["src/*"],
       "@/renderer/*": ["src/renderer/*"],
       "@shared/*": ["src/shared/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"]
 }

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../../store/chatStore';
 import { useSessionStore } from '../../store/sessionStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { Square, ArrowUp, Paperclip, X } from 'lucide-react';
 import { ImageAttachment, ImageMimeType } from '../../types';
 import { useFileMention, FileMentionPopover, InputHighlight } from './FileMention';
@@ -26,6 +27,8 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { sendMessage, interruptMessage, isSessionLoading } = useChatStore();
   const { currentSessionId } = useSessionStore();
+  const { formData } = useSettingsStore();
+  const maxWidthClass = formData.chatWidth === 'wide' ? 'max-w-5xl' : 'max-w-3xl';
 
   // 当前会话是否正在加载
   const isLoading = isSessionLoading(currentSessionId);
@@ -150,16 +153,13 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
   }, [currentSessionId, images.length, processFiles]);
 
   // 选择图片
+  // TODO: 新的 window.ipc.dialog.selectImages() 返回 string[]（文件路径数组），
+  // 需要通过 main process 读取文件并转换为 base64。暂时禁用此功能，
+  // 用户仍可通过拖拽和粘贴方式添加图片。
   const handleSelectImages = async () => {
     if (!currentSessionId) return;
-
-    const result = await window.electronAPI.dialog.selectImages();
-    if (result.success && result.images.length > 0) {
-      // 过滤掉超过大小限制的图片
-      const validImages = result.images.filter(img => img.size <= MAX_IMAGE_SIZE);
-      // 限制最大数量
-      setImages(prev => [...prev, ...validImages].slice(0, MAX_IMAGES));
-    }
+    // window.ipc.dialog.selectImages() 返回 string[]（文件路径），
+    // 但 renderer 无法直接读取本地文件为 base64，需要后续实现 IPC 桥接。
   };
 
   // 移除图片
@@ -167,9 +167,14 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
     setImages(prev => prev.filter(img => img.id !== id));
   };
 
+  const submittingRef = useRef(false);
+
   const handleSubmit = async () => {
     // 允许只发送图片（无文本）
     if ((!input.trim() && images.length === 0) || !currentSessionId || isLoading) return;
+    // 防止双发（点击 + Enter 同时触发）
+    if (submittingRef.current) return;
+    submittingRef.current = true;
 
     const message = input.trim();
     const attachedImages = [...images];
@@ -183,7 +188,9 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
     // 发送前滚动到底部
     onMessageSent?.();
 
-    await sendMessage(message, currentSessionId, undefined, attachedImages.length > 0 ? attachedImages : undefined);
+    await sendMessage(message, currentSessionId, attachedImages.length > 0 ? attachedImages : undefined);
+
+    submittingRef.current = false;
 
     // 发送后重新聚焦
     textareaRef.current?.focus();
@@ -195,7 +202,7 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
       return;
     }
 
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSubmit();
     }
@@ -211,7 +218,11 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
 
   return (
     <div className="bg-background px-4 pb-4">
-      <div className="max-w-3xl mx-auto">
+      <div className={`${maxWidthClass} mx-auto`}>
+        {/* 上下文使用量指示器 */}
+        <div className="flex justify-end pb-1.5">
+          <ContextUsageIndicator />
+        </div>
         {/* 输入框容器 */}
         <div
           ref={containerRef}
@@ -328,7 +339,6 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
                 </button>
 
                 <ProviderSelector />
-                {currentSessionId && <PermissionModeSelector sessionId={currentSessionId} />}
               </div>
 
               {/* 右侧：发送/停止按钮 */}
@@ -371,6 +381,6 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
 
 // 导入所需的组件
 import ProviderSelector from './ProviderSelector';
-import PermissionModeSelector from './PermissionModeSelector';
+import ContextUsageIndicator from './ContextUsageIndicator';
 
 export default InputArea;

@@ -5,9 +5,9 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 import { PublisherGithub } from '@electron-forge/publisher-github';
-import { cpSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
 import { spawnSync } from 'child_process';
+import { cpSync, mkdirSync } from 'fs';
+import path from 'path';
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -18,12 +18,9 @@ const config: ForgeConfig = {
     // macOS 特定配置
     appBundleId: 'com.liruifengv.amon',
     appCategoryType: 'public.app-category.productivity',
-    asar: {
-      unpack: '**/node_modules/@anthropic-ai/**',
-    },
-    // 将 resources/skills、bun 和 uv 复制到打包目录的 resources 中
+    asar: true,
+    // 将 resources 中的运行时二进制复制到打包目录
     extraResource: [
-      './resources/skills',
       // bun 可执行文件（macOS/Linux）
       ...(process.platform !== 'win32' ? ['./resources/bun'] : []),
       // bun 可执行文件（Windows）
@@ -38,6 +35,10 @@ const config: ForgeConfig = {
       ...(process.platform === 'win32' ? ['./resources/git-portable'] : []),
       // msys2（仅 Windows）
       ...(process.platform === 'win32' ? ['./resources/msys2'] : []),
+      // workspace 模板文件
+      './resources/templates',
+      // 内置 skills
+      './skills',
     ],
   },
   rebuildConfig: {},
@@ -73,16 +74,28 @@ const config: ForgeConfig = {
         throw new Error('Failed to download runtime binaries');
       }
     },
-    packageAfterCopy: async (_config, buildPath) => {
-      // 将 claude-agent-sdk 复制到打包目录的 node_modules 中
-      const sdkSrc = join(process.cwd(), 'node_modules', '@anthropic-ai');
-      const sdkDest = join(buildPath, 'node_modules', '@anthropic-ai');
+    packageAfterCopy: async (_config, _buildPath) => {
+      const buildPath = _buildPath;
+      const appNodeModules = path.join(buildPath, 'node_modules');
+      const sourceNodeModules = path.join(process.cwd(), 'node_modules');
 
-      if (existsSync(sdkSrc)) {
-        mkdirSync(join(buildPath, 'node_modules'), { recursive: true });
-        cpSync(sdkSrc, sdkDest, { recursive: true });
-        console.log(`Copied @anthropic-ai SDK to ${sdkDest}`);
-      }
+      mkdirSync(appNodeModules, { recursive: true });
+
+      const copyRuntimePackage = (packageName: string, runtimePaths: string[]) => {
+        const sourceDir = path.join(sourceNodeModules, packageName);
+        const targetDir = path.join(appNodeModules, packageName);
+        mkdirSync(targetDir, { recursive: true });
+        for (const runtimePath of runtimePaths) {
+          cpSync(
+            path.join(sourceDir, runtimePath),
+            path.join(targetDir, runtimePath),
+            { recursive: true },
+          );
+        }
+      };
+
+      copyRuntimePackage('turndown', ['package.json', 'lib']);
+      copyRuntimePackage('@mixmark-io/domino', ['package.json', 'lib']);
     },
   },
   plugins: [

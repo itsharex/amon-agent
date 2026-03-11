@@ -2,398 +2,81 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Rule
-
-Always use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
-
-Always use Chinese when responding to me.
-
-## Project Overview
-
-Amon (amon-agent) is a desktop chat application built with Electron + React + TypeScript that integrates with Anthropic's Claude AI through the Claude Agent SDK.
-
 ## Commands
 
 ```bash
-bun start        # Development server with hot reload
-bun run lint     # Run ESLint on TypeScript files
-bun run package  # Package for distribution
-bun run make     # Create platform installers (macOS ZIP, Linux DEB/RPM, Windows)
+bun install                # Install dependencies
+bun start                  # Dev server with hot reload (electron-forge start)
+bun run lint               # ESLint
+bun run typecheck          # tsc --noEmit
+bun run test               # vitest run (tests in tests/**/*.test.ts)
+bun run test:watch         # vitest watch mode
+bun run changeset          # Create a release changeset
+bun run version            # Apply changesets and update CHANGELOG
+bun run package            # Build app package
+bun run make               # Build platform installers
+bun run download:binaries  # Download bundled runtime binaries (bun, uv) before packaging
 ```
 
 ## Architecture
 
-### Process Architecture
+Amon is an Electron desktop app (AI coding assistant) with four build targets, each with its own Vite config:
 
-```
-Main Process (src/main/)
-├── index.ts                    - Window management, shortcuts
-├── ipc/handlers.ts             - IPC request handlers
-├── agent/
-│   ├── agentService.ts         - Claude SDK query execution
-│   ├── messageHandler.ts       - SDK message type dispatching
-│   ├── streamState.ts          - Stream event state machine (block lifecycle)
-│   ├── permissionManager.ts    - Tool permission requests (60s timeout)
-│   └── titleService.ts         - Auto-generate session titles
-└── store/
-    ├── sessionStore.ts         - In-memory state (single source of truth)
-    ├── persistence.ts          - File I/O layer (atomic writes)
-    ├── configStore.ts          - Settings persistence (uses Zod validation)
-    └── skillsStore.ts          - Skills loading from system/workspace dirs
-         │
-         │ IPC Channels (src/shared/ipc.ts)
-         │ Push events: messages:updated, query:state, etc.
-         │
-    Preload Script (src/preload/index.ts)
-    └── Exposes window.electronAPI
-         │
-         ▼
-Renderer Process (src/renderer/)
-├── store/
-│   ├── chatStore.ts            - Message cache (subscribes to main process)
-│   ├── sessionStore.ts         - Session list state
-│   ├── settingsStore.ts        - Settings state
-│   └── permissionStore.ts      - Permission request state
-└── components/
-    ├── Message/                - Message display components
-    ├── Chat/                   - Chat view, input, message list
-    ├── Sidebar/                - Session list, navigation
-    ├── Permission/             - Permission request dialogs
-    └── Settings/               - Settings window
-```
+| Target | Entry | Vite Config | Purpose |
+|--------|-------|-------------|---------|
+| Main | `src/main/index.ts` | `vite.main.config.ts` | Electron main process |
+| Preload | `src/preload/index.ts` | `vite.preload.config.ts` | contextBridge IPC bridge |
+| Renderer | `src/renderer/index.tsx` | `vite.renderer.config.ts` | Main window (React) |
+| Settings | `src/renderer/settings.tsx` | `vite.settings.config.ts` | Settings window (React) |
+
+### Three-Layer Agent Architecture
+
+**`src/ai/`** — Provider-agnostic AI streaming layer. Global provider registry (`api-registry.ts`) with four built-in providers: `anthropic-messages`, `openai-completions`, `openai-responses`, `google-generative-ai`. Entry points: `streamSimple()`, `completeSimple()`, `stream()`, `complete()`.
+
+**`src/agent/`** — Framework-agnostic Agent class and loop. `Agent` manages state, tools, messages, and streaming. `agentLoop()` implements the dual-loop pattern: inner loop (LLM call → tool execution → check steering), outer loop (check follow-up queue → repeat). Tools use Zod schemas for input validation.
+
+**`src/main/agent/`** — Electron-specific integration. `AgentService` creates Agent instances per session, wires dependencies. `EventAdapter` bridges `AgentEvent` → `SessionStore` mutations → `PushService` calls.
+
+This architecture replaces the previous Claude Agent SDK-based runtime. Do not look for SDK orchestration code in the main process; the agent core now lives in `src/ai/` and `src/agent/`.
+
+### IPC Pattern
+
+Two-direction communication between main and renderer:
+
+- **Request/Response** (renderer → main): `ipcRenderer.invoke` / `ipcMain.handle` with `prefix.method` naming (e.g., `agent.sendMessage`, `session.list`, `settings.get`)
+- **Push Events** (main → renderer): `webContents.send` / `ipcRenderer.on` with `push:eventName` naming (e.g., `push:messagesUpdated`, `push:agentState`). Typed by `PushEventMap` in `src/shared/ipc-types.ts`.
+
+The preload script exposes `window.ipc` (request/response) and `window.push` (event subscription). **Proxy objects do NOT work** with `contextBridge.exposeInMainWorld` — each IPC method must be an explicit function object.
+
+### Service Wiring
+
+Manual constructor-based DI in `src/main/index.ts`. Services instantiated in order: `SessionStore` → `Persistence` → `ConfigStore` → `SkillsStore` → `ToolRegistry` → `PushService` → `EventAdapter` → `AgentService`. `bridgeSessionStoreToPush()` subscribes store events before windows are created. All shared services are injected into `registerIpcHandlers()` via `IpcDependencies`.
 
 ### Data Flow
 
-Main process is the single source of truth. Renderer subscribes to push events:
-
 ```
-User Input → IPC Request → AgentService → SessionStore → Push Event → Renderer Cache → UI
-```
-
-SessionStore emits events that IPC handlers forward to renderer:
-- `messages:updated` - Message content changes
-- `query:state` - Loading state changes
-- `query:complete` - Query finished
-- `session:created/deleted/updated` - Session changes
-
-### Message Handling (Main Process)
-
-`messageHandler.ts` dispatches SDK messages by type, with `streamState.ts` tracking block lifecycle:
-
-```typescript
-// Message types
-switch (sdkMessage.type) {
-  case 'assistant':    // Complete message with ContentBlocks
-  case 'stream_event': // Stream events (see below)
-  case 'result':       // Query complete with usage stats
-  case 'user':         // Ignored (added by client)
-  case 'system':       // Logging only
-}
-
-// Stream event lifecycle
-message_start → content_block_start → content_block_delta → content_block_stop → message_delta → message_stop
-
-// StreamState tracks blocks by index
-streamState.openTextBlock(index, id)    // content_block_start
-streamState.appendDelta(index, content) // content_block_delta
-streamState.closeBlock(index)           // content_block_stop
+User input → chatStore.sendMessage() → window.ipc.agent.sendMessage
+→ AgentService.sendMessage() → resolve provider/model → load skills + workspace files
+→ buildSystemPrompt() → Agent.prompt() → agentLoop()
+→ AgentEvent → EventAdapter → SessionStore (messages)
+→ bridgeSessionStoreToPush() → PushService → webContents.send
+→ AgentService / EventAdapter → PushService (run state + tool execution)
+→ Renderer push listener → chatStore → React re-render
 ```
 
-Tool calls support hierarchy via `parentToolUseId` for Subagent scenarios (Task tool spawning child tools).
+### Renderer State
 
-### Message Display (Renderer)
+Zustand stores in `src/renderer/store/`: `chatStore` (messages, agent state, push listeners), `sessionStore` (session CRUD via IPC), `settingsStore` (settings, theme, language).
 
-`components/Message/` uses component dispatch pattern:
+## Key Conventions
 
-```
-MessageItem
-├── UserMessage         - Simple text bubble
-└── AssistantMessage    - Grouped content blocks
-    ├── ContentBlockRenderer (switch dispatch)
-    │   ├── TextBlock       - Markdown via Streamdown
-    │   ├── ThinkingBlock   - Collapsible thinking
-    │   └── ToolCallBlock   - Tool execution display (supports nested via isNested prop)
-    ├── ToolGroup           - Collapsible tool container
-    ├── SubagentToolGroup   - Hierarchical Subagent tools (default collapsed)
-    └── TodoList            - Task progress display
-```
-
-Tool calls with `parentToolUseId` are grouped under their parent Task tool in `SubagentToolGroup`.
-
-### Key Files
-
-- `src/shared/types.ts` - Shared TypeScript interfaces (ContentBlock with id/isComplete, ToolCall with parentToolUseId)
-- `src/shared/ipc.ts` - IPC channel constants (including push channels)
-- `src/shared/schemas.ts` - Zod schemas for settings validation
-- `src/main/store/sessionStore.ts` - Central state with EventEmitter
-- `src/main/agent/messageHandler.ts` - SDK message type handlers
-- `src/main/agent/streamState.ts` - Stream state machine for block lifecycle tracking
-
-### Skills System
-
-Skills extend Claude's capabilities with custom prompts. Located in:
-- System: `~/.claude/skills/<skill-name>/SKILL.md`
-- Workspace: `<workspace>/.claude/skills/<skill-name>/SKILL.md`
-- Bundled: `resources/skills/` (dev) or `app.asar.unpacked/resources/skills` (packaged)
-
-SKILL.md requires YAML frontmatter with `name` and `description` fields.
-
-### Storage
-
-- Sessions: `~/.amon/sessions/*.json`
-- Settings: `~/.amon/settings.json`
-
-## Detailed Architecture
-
-### 整体架构概览
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Amon Desktop App                                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        Main Process (Node.js)                        │    │
-│  │                                                                       │    │
-│  │  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────────┐  │    │
-│  │  │   Agent     │    │   Store     │    │      IPC Handlers       │  │    │
-│  │  │  Service    │───▶│  (Session   │───▶│  (Request/Response +    │  │    │
-│  │  │             │    │   Store)    │    │   Push Events)          │  │    │
-│  │  └──────┬──────┘    └─────────────┘    └───────────┬─────────────┘  │    │
-│  │         │                                          │                 │    │
-│  │         ▼                                          │                 │    │
-│  │  ┌─────────────┐                                   │                 │    │
-│  │  │   Claude    │                                   │                 │    │
-│  │  │  Agent SDK  │                                   │                 │    │
-│  │  └─────────────┘                                   │                 │    │
-│  └────────────────────────────────────────────────────┼─────────────────┘    │
-│                                                       │                      │
-│                              IPC Bridge (contextBridge)                      │
-│                                                       │                      │
-│  ┌────────────────────────────────────────────────────┼─────────────────┐    │
-│  │                     Renderer Process (React)       │                 │    │
-│  │                                                    ▼                 │    │
-│  │  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────────┐  │    │
-│  │  │    Zustand  │◀───│   IPC       │◀───│      Components         │  │    │
-│  │  │    Stores   │    │  Listeners  │    │  (Chat, Message, etc.)  │  │    │
-│  │  └─────────────┘    └─────────────┘    └─────────────────────────┘  │    │
-│  └──────────────────────────────────────────────────────────────────────┘    │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 进程间通信 (IPC) 详解
-
-Electron 应用分为 Main Process 和 Renderer Process，通过 IPC 通信：
-
-```
-┌──────────────────┐                              ┌──────────────────┐
-│  Renderer        │                              │  Main Process    │
-│  (React UI)      │                              │  (Node.js)       │
-├──────────────────┤                              ├──────────────────┤
-│                  │   ──── Request/Response ──▶  │                  │
-│  electronAPI.    │   agent:sendMessage          │  ipcMain.handle  │
-│  agent.send()    │   session:create             │  ('channel',     │
-│                  │   settings:get               │   handler)       │
-│                  │                              │                  │
-│                  │   ◀──── Push Events ────     │                  │
-│  electronAPI.    │   messages:updated           │  mainWindow.     │
-│  agent.on()      │   query:state                │  webContents.    │
-│                  │   permission:request         │  send('channel') │
-└──────────────────┘                              └──────────────────┘
-```
-
-**IPC 通道定义** (`src/shared/ipc.ts`):
-- Request channels: `agent:*`, `session:*`, `settings:*`, `permission:*`
-- Push channels: `messages:updated`, `query:state`, `query:complete`, `permission:request`
-
-### 消息处理流程详解
-
-用户发送消息到 AI 响应的完整流程：
-
-```
-┌─────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  User   │    │  Renderer   │    │    Main     │    │   Claude    │
-│  Input  │    │  Process    │    │   Process   │    │  Agent SDK  │
-└────┬────┘    └──────┬──────┘    └──────┬──────┘    └──────┬──────┘
-     │                │                   │                  │
-     │  Type message  │                   │                  │
-     ├───────────────▶│                   │                  │
-     │                │  IPC: sendMessage │                  │
-     │                ├──────────────────▶│                  │
-     │                │                   │  query(prompt)   │
-     │                │                   ├─────────────────▶│
-     │                │                   │                  │
-     │                │                   │  Stream Events   │
-     │                │                   │◀─────────────────┤
-     │                │                   │  message_start   │
-     │                │                   │  content_block_* │
-     │                │                   │  message_stop    │
-     │                │                   │                  │
-     │                │  Push: messages   │                  │
-     │                │◀──────────────────┤  (per event)     │
-     │                │  :updated         │                  │
-     │  UI Update     │                   │                  │
-     │◀───────────────┤                   │                  │
-     │                │                   │                  │
-```
-
-### 流式事件状态机 (StreamState)
-
-Claude Agent SDK 返回的流式事件需要通过状态机管理：
-
-```
-                    ┌─────────────────────────────────────────────┐
-                    │              StreamState                     │
-                    │  blocksByIndex: Map<number, BlockState>     │
-                    └─────────────────────────────────────────────┘
-                                         │
-     ┌───────────────────────────────────┼───────────────────────────────────┐
-     │                                   │                                   │
-     ▼                                   ▼                                   ▼
-┌─────────────┐                   ┌─────────────┐                   ┌─────────────┐
-│ TextBlock   │                   │ThinkingBlock│                   │  ToolBlock  │
-│ State       │                   │   State     │                   │   State     │
-├─────────────┤                   ├─────────────┤                   ├─────────────┤
-│ id          │                   │ id          │                   │ id          │
-│ index       │                   │ index       │                   │ index       │
-│ content     │                   │ thinking    │                   │ name        │
-│ kind: text  │                   │ kind:       │                   │ inputBuffer │
-└─────────────┘                   │  thinking   │                   │ kind: tool  │
-                                  └─────────────┘                   └─────────────┘
-
-Event Flow:
-┌──────────────┐   ┌───────────────────┐   ┌───────────────────┐   ┌──────────────┐
-│message_start │──▶│content_block_start│──▶│content_block_delta│──▶│content_block │
-│              │   │  openXxxBlock()   │   │  appendDelta()    │   │    _stop     │
-│ beginStep()  │   │                   │   │                   │   │ closeBlock() │
-└──────────────┘   └───────────────────┘   └───────────────────┘   └──────────────┘
-                                                                          │
-                                                                          ▼
-                                                                   ┌──────────────┐
-                                                                   │ message_stop │
-                                                                   │  resetStep() │
-                                                                   └──────────────┘
-```
-
-### 工具调用与 Subagent 层级
-
-当 AI 调用 Task 工具（Subagent）时，会产生嵌套的工具调用：
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        Tool Call Hierarchy                               │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │  Task Tool (parentToolUseId: null)                              │    │
-│  │  id: "tool_123"                                                 │    │
-│  │  name: "Task"                                                   │    │
-│  │  input: { prompt: "Search for files...", subagent_type: "..." }│    │
-│  │                                                                  │    │
-│  │  ┌─────────────────────────────────────────────────────────┐    │    │
-│  │  │  Child Tool 1 (parentToolUseId: "tool_123")             │    │    │
-│  │  │  id: "tool_456"                                         │    │    │
-│  │  │  name: "Glob"                                           │    │    │
-│  │  │  input: { pattern: "**/*.ts" }                          │    │    │
-│  │  └─────────────────────────────────────────────────────────┘    │    │
-│  │                                                                  │    │
-│  │  ┌─────────────────────────────────────────────────────────┐    │    │
-│  │  │  Child Tool 2 (parentToolUseId: "tool_123")             │    │    │
-│  │  │  id: "tool_789"                                         │    │    │
-│  │  │  name: "Read"                                           │    │    │
-│  │  │  input: { file_path: "/path/to/file.ts" }               │    │    │
-│  │  └─────────────────────────────────────────────────────────┘    │    │
-│  │                                                                  │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-
-UI Rendering:
-┌─────────────────────────────────────────────────────────────────────────┐
-│ ▼ Task: Search for files...                              [Running]      │
-│   ├── Glob: **/*.ts                                      [Completed]    │
-│   └── Read: /path/to/file.ts                             [Completed]    │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-### 状态管理架构
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         State Management                                 │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  Main Process (Single Source of Truth)                                  │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │  SessionStore (EventEmitter)                                     │    │
-│  │  ├── sessions: Map<sessionId, Session>                          │    │
-│  │  ├── messages: Map<sessionId, Message[]>                        │    │
-│  │  └── toolCalls: Map<sessionId, Map<toolId, ToolCall>>           │    │
-│  │                                                                  │    │
-│  │  Events: 'messages:updated', 'session:created', etc.            │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                              │                                           │
-│                              │ IPC Push                                  │
-│                              ▼                                           │
-│  Renderer Process (Cache)                                               │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │  Zustand Stores                                                  │    │
-│  │  ├── chatStore: { messages, toolCalls, ... }                    │    │
-│  │  ├── sessionStore: { sessions, currentSessionId, ... }          │    │
-│  │  ├── settingsStore: { settings, ... }                           │    │
-│  │  └── permissionStore: { pendingRequests, ... }                  │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-### 消息内容块类型
-
-```typescript
-// 消息包含多个内容块
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: MessageContentBlock[];
-  toolCalls?: ToolCall[];
-}
-
-// 内容块类型
-type MessageContentBlock =
-  | TextContentBlock      // 文本内容 (Markdown)
-  | ThinkingContentBlock  // 思考过程 (可折叠)
-  | ToolUseContentBlock;  // 工具调用引用
-
-// 工具调用
-interface ToolCall {
-  id: string;
-  name: string;              // 工具名称: Read, Write, Edit, Bash, Task, etc.
-  input: Record<string, unknown>;
-  inputBuffer?: string;      // 流式输入缓冲
-  output?: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
-  isError?: boolean;
-  parentToolUseId?: string;  // 父工具 ID (Subagent 场景)
-}
-```
-
-## Environment Variables
-
-- `ANTHROPIC_API_KEY` (required) - Anthropic API credentials
-- `ANTHROPIC_BASE_URL` (optional) - Custom API endpoint
-- `CLAUDE_MODEL` (optional) - Default model override
-
-## Build Notes
-
-- Electron Forge with Vite plugin
-- SDK must be unpacked from asar (`forge.config.ts` handles via `asar.unpack`)
-- Skills resources copied via `extraResource` in forge config
-- Two renderer windows: main_window, settings_window
-
-## TODO
-
-- [ ] CLI 命令注册：实现 "Install shell command" 功能，让用户可以在终端使用 `amon` 命令
-  - macOS: symlink 到 `/usr/local/bin` 或提供 shell 脚本添加到 PATH
-  - Windows: NSIS 安装器添加 PATH 或应用内 `setx` 命令
-  - Linux: symlink 到 `/usr/local/bin`
+- **Path aliases**: `@/*` → `src/*`, `@shared/*` → `src/shared/*` (configured in tsconfig AND all 4 vite configs)
+- **Shared code**: `src/shared/` for types, schemas, constants used by both main and renderer
+- **Validation**: Zod v4 for schemas (`src/shared/schemas.ts` for settings, `src/agent/types.ts` for tool input)
+- **i18n**: `i18next` with namespace JSON files in `src/locales/{en,zh}/`
+- **UI**: React 19 + Radix UI primitives + Tailwind CSS v4 + Shadcn components in `src/renderer/components/ui/`
+- **Runtime break**: The old Claude Agent SDK runtime is gone; new work should target the provider-agnostic agent core and main-process integration described above.
+- **Settings migration**: Old format (`providers[]`, `agent.provider`, `agent.model`) → new format (`agent.providerConfigs[]`, `agent.activeProviderId`, `agent.activeModelId`). Migration in `parseSettings()` is best-effort; deprecated fields like `thinkingBudget` and `customSystemPrompt` are removed.
+- **App data**: `~/.amon/` — `settings.json`, `sessions/` (JSONL persistence), `skills/`, `workspace/`
+- **Skills**: Built-in skills live in repo `skills/` and are indexed by `skills/index.json`. Default built-ins are installed to `~/.amon/skills` on first launch. Load order is system/project extra dirs (default `.claude`), then `~/.amon/skills`, then `<workspace>/.amon/skills`, with later entries overriding earlier ones.
+- **Tools**: 8 built-in tools registered in `createDefaultToolRegistry()` at `src/main/tools/tool-registry.ts` (bash, read, write, edit, glob, grep, web-fetch, web-search)

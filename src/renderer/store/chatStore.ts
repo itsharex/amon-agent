@@ -1,41 +1,38 @@
 import { create } from 'zustand';
-import { Message, MessageOptions, PermissionMode, ImageAttachment } from '../types';
+import type { Message, ImageAttachment, AgentRunState, ToolExecutionState } from '../types';
 
 interface ChatState {
   // 按会话缓存消息（来自主进程推送）
   sessionMessages: Record<string, Message[]>;
-  // 各会话的加载状态
-  sessionLoadingState: Record<string, boolean>;
-  // 各会话的临时权限模式（覆盖全局设置）
-  sessionPermissionMode: Record<string, PermissionMode | undefined>;
+  // 各会话的 Agent 运行状态
+  agentStates: Record<string, AgentRunState>;
   // 各会话的错误信息
   sessionErrors: Record<string, string | null>;
 
   // Getters
   getMessages: (sessionId: string | null) => Message[];
   isSessionLoading: (sessionId: string | null) => boolean;
-  getSessionPermissionMode: (sessionId: string | null) => PermissionMode | undefined;
+  getAgentState: (sessionId: string | null) => AgentRunState | null;
+  getToolExecution: (sessionId: string | null, toolCallId: string) => ToolExecutionState | undefined;
   getSessionError: (sessionId: string | null) => string | null;
 
-  // Actions（仅用于更新本地缓存，实际数据由主进程管理）
+  // Actions
   setMessages: (sessionId: string, messages: Message[]) => void;
-  setLoadingState: (sessionId: string, isLoading: boolean) => void;
-  setLoadingStates: (states: Record<string, boolean>) => void;
-  setSessionPermissionMode: (sessionId: string, mode: PermissionMode | undefined) => void;
+  setAgentState: (sessionId: string, state: AgentRunState) => void;
+  updateToolExecution: (sessionId: string, toolCallId: string, state: ToolExecutionState) => void;
   setSessionError: (sessionId: string, error: string | null) => void;
   clearSessionError: (sessionId: string) => void;
   clearSessionCache: (sessionId: string) => void;
 
   // 发送到主进程
-  sendMessage: (content: string, sessionId: string, options?: MessageOptions, images?: ImageAttachment[]) => Promise<void>;
+  sendMessage: (content: string, sessionId: string, images?: ImageAttachment[]) => Promise<void>;
   interruptMessage: (sessionId: string) => Promise<void>;
   loadMessages: (sessionId: string) => Promise<void>;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
   sessionMessages: {},
-  sessionLoadingState: {},
-  sessionPermissionMode: {},
+  agentStates: {},
   sessionErrors: {},
 
   getMessages: (sessionId) => {
@@ -45,12 +42,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   isSessionLoading: (sessionId) => {
     if (!sessionId) return false;
-    return get().sessionLoadingState[sessionId] || false;
+    return get().agentStates[sessionId]?.isRunning || false;
   },
 
-  getSessionPermissionMode: (sessionId) => {
+  getAgentState: (sessionId) => {
+    if (!sessionId) return null;
+    return get().agentStates[sessionId] || null;
+  },
+
+  getToolExecution: (sessionId, toolCallId) => {
     if (!sessionId) return undefined;
-    return get().sessionPermissionMode[sessionId];
+    return get().agentStates[sessionId]?.toolExecutions?.[toolCallId];
   },
 
   getSessionError: (sessionId) => {
@@ -63,18 +65,40 @@ export const useChatStore = create<ChatState>((set, get) => ({
       sessionMessages: { ...state.sessionMessages, [sessionId]: messages },
     })),
 
-  setLoadingState: (sessionId, isLoading) =>
-    set((state) => ({
-      sessionLoadingState: { ...state.sessionLoadingState, [sessionId]: isLoading },
-    })),
+  setAgentState: (sessionId, agentState) =>
+    set((state) => {
+      const current = state.agentStates[sessionId];
+      // When agent stops, preserve accumulated tool executions
+      const toolExecutions = !agentState.isRunning && current?.toolExecutions
+        ? { ...current.toolExecutions, ...agentState.toolExecutions }
+        : agentState.toolExecutions;
+      return {
+        agentStates: {
+          ...state.agentStates,
+          [sessionId]: { ...agentState, toolExecutions },
+        },
+      };
+    }),
 
-  setLoadingStates: (states) =>
-    set({ sessionLoadingState: states }),
-
-  setSessionPermissionMode: (sessionId, mode) =>
-    set((state) => ({
-      sessionPermissionMode: { ...state.sessionPermissionMode, [sessionId]: mode },
-    })),
+  updateToolExecution: (sessionId, toolCallId, toolState) =>
+    set((state) => {
+      const current = state.agentStates[sessionId] || {
+        isRunning: false,
+        toolExecutions: {},
+      };
+      return {
+        agentStates: {
+          ...state.agentStates,
+          [sessionId]: {
+            ...current,
+            toolExecutions: {
+              ...current.toolExecutions,
+              [toolCallId]: toolState,
+            },
+          },
+        },
+      };
+    }),
 
   setSessionError: (sessionId, error) =>
     set((state) => ({
@@ -89,35 +113,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
   clearSessionCache: (sessionId) =>
     set((state) => {
       const { [sessionId]: _removedMessages, ...restMessages } = state.sessionMessages;
-      const { [sessionId]: _removedState, ...restLoadingState } = state.sessionLoadingState;
-      const { [sessionId]: _removedMode, ...restPermissionMode } = state.sessionPermissionMode;
+      const { [sessionId]: _removedState, ...restAgent } = state.agentStates;
       const { [sessionId]: _removedError, ...restErrors } = state.sessionErrors;
       void _removedMessages;
       void _removedState;
-      void _removedMode;
       void _removedError;
       return {
         sessionMessages: restMessages,
-        sessionLoadingState: restLoadingState,
-        sessionPermissionMode: restPermissionMode,
+        agentStates: restAgent,
         sessionErrors: restErrors,
       };
     }),
 
-  sendMessage: async (content, sessionId, options, images) => {
+  sendMessage: async (content, sessionId, images) => {
     try {
-      // 清除之前的错误
       set((state) => ({
         sessionErrors: { ...state.sessionErrors, [sessionId]: null },
       }));
 
-      // 如果有临时权限模式，合并到 options 中
-      const sessionMode = get().sessionPermissionMode[sessionId];
-      const mergedOptions: MessageOptions | undefined = sessionMode || options
-        ? { ...options, permissionMode: options?.permissionMode ?? sessionMode }
-        : undefined;
-
-      await window.electronAPI.agent.sendMessage(content, sessionId, mergedOptions, images);
+      await window.ipc.agent.sendMessage(content, sessionId, images);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       set((state) => ({
@@ -128,7 +142,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   interruptMessage: async (sessionId: string) => {
     try {
-      await window.electronAPI.agent.interrupt(sessionId);
+      await window.ipc.agent.interrupt(sessionId);
     } catch (error) {
       console.error('Failed to interrupt message:', error);
     }
@@ -136,7 +150,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   loadMessages: async (sessionId) => {
     try {
-      const messages = await window.electronAPI.session.getMessages(sessionId);
+      const messages = await window.ipc.session.getMessages(sessionId);
       set((state) => ({
         sessionMessages: { ...state.sessionMessages, [sessionId]: messages },
       }));
@@ -146,25 +160,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 }));
 
-// 初始化监听器（模块级别，只执行一次）
-if (typeof window !== 'undefined' && window.electronAPI) {
+// ==================== 初始化 Push 监听器 ====================
+
+if (typeof window !== 'undefined' && window.push) {
   // 监听消息更新
-  window.electronAPI.agent.onMessagesUpdated(({ sessionId, messages }) => {
+  window.push.on('push:messagesUpdated', ({ sessionId, messages }) => {
     useChatStore.getState().setMessages(sessionId, messages);
   });
 
-  // 监听消息状态变化
-  window.electronAPI.agent.onMessageState(({ sessionId, isLoading }) => {
-    useChatStore.getState().setLoadingState(sessionId, isLoading);
+  // 监听 Agent 状态变化
+  window.push.on('push:agentState', ({ sessionId, state }) => {
+    useChatStore.getState().setAgentState(sessionId, state);
   });
 
-  // 监听消息错误
-  window.electronAPI.agent.onMessageError(({ sessionId, error }) => {
+  // 监听工具执行状态
+  window.push.on('push:toolExecution', ({ sessionId, toolCallId, state }) => {
+    useChatStore.getState().updateToolExecution(sessionId, toolCallId, state);
+  });
+
+  // 监听错误
+  window.push.on('push:error', ({ sessionId, error }) => {
     useChatStore.getState().setSessionError(sessionId, error);
-  });
-
-  // 监听消息完成（可用于更新 UI 状态）
-  window.electronAPI.agent.onMessageComplete(({ sessionId }) => {
-    useChatStore.getState().setLoadingState(sessionId, false);
   });
 }

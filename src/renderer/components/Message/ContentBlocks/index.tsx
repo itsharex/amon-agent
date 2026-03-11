@@ -1,18 +1,17 @@
 import React from 'react';
-import { MessageContentBlock } from '../../../types';
+import type { TextContent, ThinkingContent, ToolCall } from '../../../types';
 import TextBlock from './TextBlock';
 import ThinkingBlock from './ThinkingBlock';
 import ToolCallBlock from './ToolCallBlock';
-import PermissionBlock from './PermissionBlock';
-import UserQuestionBlock from './UserQuestionBlock';
-import PlanApprovalBlock from './PlanApprovalBlock';
+
+type ContentItem = TextContent | ThinkingContent | ToolCall;
 
 export interface ContentBlockRendererProps {
-  block: MessageContentBlock;
+  block: ContentItem;
   isStreaming?: boolean;
   isLastBlock?: boolean;
-  /** Whether collapsible blocks should be collapsed by default (for historical messages) */
   defaultCollapsed?: boolean;
+  sessionId: string | null;
 }
 
 /**
@@ -23,12 +22,13 @@ const ContentBlockRenderer: React.FC<ContentBlockRendererProps> = ({
   isStreaming,
   isLastBlock,
   defaultCollapsed = false,
+  sessionId,
 }) => {
   switch (block.type) {
     case 'text':
       return (
         <TextBlock
-          content={block.content}
+          content={block.text}
           isStreaming={isStreaming && isLastBlock}
         />
       );
@@ -36,26 +36,16 @@ const ContentBlockRenderer: React.FC<ContentBlockRendererProps> = ({
     case 'thinking':
       return (
         <ThinkingBlock
-          content={block.content}
+          content={block.thinking}
           isStreaming={isStreaming}
           defaultCollapsed={defaultCollapsed}
         />
       );
 
-    case 'tool_call':
-      return <ToolCallBlock toolCall={block.toolCall} />;
-
-    case 'permission':
-      return <PermissionBlock permission={block.permission} />;
-
-    case 'user_question':
-      return <UserQuestionBlock userQuestion={block.userQuestion} />;
-
-    case 'plan_approval':
-      return <PlanApprovalBlock planApproval={block.planApproval} />;
+    case 'toolCall':
+      return <ToolCallBlock toolCall={block} sessionId={sessionId} />;
 
     default:
-      // 未知类型，静默忽略
       return null;
   }
 };

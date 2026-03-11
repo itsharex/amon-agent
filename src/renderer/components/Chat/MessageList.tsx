@@ -1,12 +1,13 @@
-import React, { useRef, useCallback, useEffect, useImperativeHandle } from 'react';
+import React, { useRef, useCallback, useEffect, useImperativeHandle, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MessageSquare } from 'lucide-react';
+
 import { useChatStore } from '../../store/chatStore';
 import { useSessionStore } from '../../store/sessionStore';
-import { usePermissionStore } from '../../store/permissionStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { MessageItem } from '../Message';
-import PermissionRequest from '../Permission/PermissionRequest';
-import AskUserQuestionRequest from '../Permission/AskUserQuestionRequest';
-import PlanApprovalBlock from '../Message/ContentBlocks/PlanApprovalBlock';
+import AssistantTurn from '../Message/AssistantTurn';
+import type { Message, AssistantMessage as AssistantMessageType } from '../../types';
 
 export interface MessageListRef {
   scrollToBottom: () => void;
@@ -18,13 +19,17 @@ interface MessageListProps {
 }
 
 const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNearBottom }, ref) => {
-  const { t } = useTranslation('message');
+  const { t } = useTranslation(['message', 'chat']);
   const { currentSessionId } = useSessionStore();
   const { getMessages, getSessionError, clearSessionError } = useChatStore();
-  const { getPendingRequest, getPendingQuestionRequest, getPendingPlanApprovalRequest } = usePermissionStore();
   const messages = getMessages(currentSessionId);
   const error = getSessionError(currentSessionId);
-  
+  const { formData } = useSettingsStore();
+  const maxWidthClass = formData.chatWidth === 'wide' ? 'max-w-5xl' : 'max-w-3xl';
+
+  // Group messages into visual blocks: user messages standalone, consecutive assistant messages as turns
+  const groups = useMemo(() => groupMessagesIntoTurns(messages), [messages]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const prevSessionIdRef = useRef<string | null>(null);
@@ -34,11 +39,6 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
   const lastScrollTopRef = useRef(0);
   // 标记是否是程序触发的滚动
   const isProgrammaticScrollRef = useRef(false);
-
-  // 获取待处理的请求
-  const pendingRequest = currentSessionId ? getPendingRequest(currentSessionId) : null;
-  const pendingQuestionRequest = currentSessionId ? getPendingQuestionRequest(currentSessionId) : null;
-  const pendingPlanApprovalRequest = currentSessionId ? getPendingPlanApprovalRequest(currentSessionId) : null;
 
   // 滚动到底部
   const scrollToBottom = useCallback((instant = false) => {
@@ -65,7 +65,7 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
   const checkNearBottom = useCallback(() => {
     const container = containerRef.current;
     if (!container) return true;
-    
+
     const threshold = 100;
     const isNear = container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
     return isNear;
@@ -111,7 +111,7 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
     if (!content || !container) return;
 
     let rafId: number | null = null;
-    
+
     const doScroll = () => {
       if (shouldAutoScrollRef.current) {
         isProgrammaticScrollRef.current = true;
@@ -151,49 +151,44 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
     };
   }, [currentSessionId]);
 
-  // 当有权限请求或问题请求时滚动到底部
-  useEffect(() => {
-    if (pendingRequest || pendingQuestionRequest || pendingPlanApprovalRequest) {
-      shouldAutoScrollRef.current = true;
-      requestAnimationFrame(() => {
-        scrollToBottom(true);
-      });
-    }
-  }, [pendingRequest, pendingQuestionRequest, pendingPlanApprovalRequest, scrollToBottom]);
-
   return (
-    <div 
+    <div
       ref={containerRef}
       onScroll={handleScroll}
       className="flex-1 overflow-y-auto bg-background"
     >
-      <div ref={contentRef}>
-        {/* 消息列表 */}
-        {messages.map((message, index) => (
-          <div key={message.id} className="max-w-3xl mx-auto px-4 py-2.5">
-            <MessageItem message={message} isLastMessage={index === messages.length - 1} />
+      <div ref={contentRef} className={groups.length === 0 ? 'min-h-full flex flex-col' : ''}>
+        {/* 空状态引导 */}
+        {groups.length === 0 && (
+          <div className="flex-1 flex flex-col items-center justify-center text-center text-muted-foreground">
+            <MessageSquare className="w-10 h-10 opacity-30 mb-4" />
+            <p className="text-sm mb-3">{t('chat:emptyChat.hint')}</p>
+            <div className="flex flex-col gap-1.5 text-xs">
+              {(t('chat:emptyChat.examples', { returnObjects: true }) as string[]).map((example) => (
+                <span key={example} className="text-muted-foreground/70">"{example}"</span>
+              ))}
+            </div>
           </div>
-        ))}
+        )}
+
+        {/* 消息列表 — grouped by turn */}
+        {groups.map((group, gi) => {
+          if (group.type === 'user') {
+            return (
+              <div key={`user-${group.message.timestamp}-${gi}`} className={`${maxWidthClass} mx-auto px-4 py-2.5`}>
+                <MessageItem message={group.message} />
+              </div>
+            );
+          }
+          return (
+            <div key={`turn-${group.messages[0].timestamp}-${gi}`} className={`${maxWidthClass} mx-auto px-4 py-2.5`}>
+              <AssistantTurn messages={group.messages} isLastTurn={gi === groups.length - 1} />
+            </div>
+          );
+        })}
 
         {/* Footer 内容 */}
-        <div className="max-w-3xl mx-auto px-4 pb-6">
-          {/* 权限请求 - 待处理 */}
-          {pendingRequest && (
-            <PermissionRequest request={pendingRequest} />
-          )}
-
-          {/* 用户问题请求 - 待处理 */}
-          {pendingQuestionRequest && (
-            <AskUserQuestionRequest request={pendingQuestionRequest} />
-          )}
-
-          {/* 计划审批请求 - 待处理 */}
-          {pendingPlanApprovalRequest && (
-            <div className="mt-3">
-              <PlanApprovalBlock pendingRequest={pendingPlanApprovalRequest} />
-            </div>
-          )}
-
+        <div className={`${maxWidthClass} mx-auto px-4 pb-6`}>
           {/* 错误提示 */}
           {error && (
             <div className="mt-3 p-4 bg-destructive/10 border border-destructive/30 rounded-xl relative">
@@ -218,3 +213,40 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
 MessageList.displayName = 'MessageList';
 
 export default MessageList;
+
+// ==================== Message grouping ====================
+
+type MessageGroup =
+  | { type: 'user'; message: Message }
+  | { type: 'assistant_turn'; messages: AssistantMessageType[] };
+
+/**
+ * Group a flat message list into visual turns:
+ * - User messages are standalone
+ * - Consecutive assistant messages between user messages form one turn
+ * - toolResult messages are skipped (agent-internal)
+ */
+function groupMessagesIntoTurns(messages: Message[]): MessageGroup[] {
+  const groups: MessageGroup[] = [];
+  let currentTurn: AssistantMessageType[] = [];
+
+  for (const msg of messages) {
+    if (msg.role === 'toolResult') continue;
+
+    if (msg.role === 'user') {
+      if (currentTurn.length > 0) {
+        groups.push({ type: 'assistant_turn', messages: currentTurn });
+        currentTurn = [];
+      }
+      groups.push({ type: 'user', message: msg });
+    } else if (msg.role === 'assistant') {
+      currentTurn.push(msg as AssistantMessageType);
+    }
+  }
+
+  if (currentTurn.length > 0) {
+    groups.push({ type: 'assistant_turn', messages: currentTurn });
+  }
+
+  return groups;
+}

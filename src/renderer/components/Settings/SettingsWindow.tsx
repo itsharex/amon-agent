@@ -6,11 +6,11 @@ import AgentSettings from './AgentSettings';
 import ProviderSettings from './ProviderSettings';
 import ShortcutsSettings from './ShortcutsSettings';
 import WorkspaceSettings from './WorkspaceSettings';
-import SkillsSettings from './SkillsSettings';
 import AboutSettings from './AboutSettings';
-import { Settings, MessageCircle, Info, Keyboard, Folder, Sparkles, Server } from 'lucide-react';
+import { Settings, MessageCircle, Info, Keyboard, Folder, Server } from 'lucide-react';
+import ConfirmDialog from '../ConfirmDialog';
 
-type SettingsTab = 'general' | 'provider' | 'workspace' | 'agent' | 'shortcuts' | 'skills' | 'about';
+type SettingsTab = 'general' | 'provider' | 'workspace' | 'agent' | 'shortcuts' | 'about';
 
 const SettingsWindow: React.FC = () => {
   const { saveSettings, saveError, isSaving, loadSettings, hasChanges } = useSettingsStore();
@@ -19,7 +19,7 @@ const SettingsWindow: React.FC = () => {
   // 从 URL hash 读取初始 tab，如果没有则默认为 'general'
   const getInitialTab = (): SettingsTab => {
     const hash = window.location.hash.slice(1); // 移除 # 符号
-    const validTabs: SettingsTab[] = ['general', 'provider', 'workspace', 'agent', 'shortcuts', 'skills', 'about'];
+    const validTabs: SettingsTab[] = ['general', 'provider', 'workspace', 'agent', 'shortcuts', 'about'];
     return validTabs.includes(hash as SettingsTab) ? (hash as SettingsTab) : 'general';
   };
 
@@ -37,7 +37,7 @@ const SettingsWindow: React.FC = () => {
   }, []);
 
   const handleClose = () => {
-    window.electronAPI.window.closeSettings();
+    window.ipc.system.closeSettings();
   };
 
   const handleSave = async () => {
@@ -66,11 +66,6 @@ const SettingsWindow: React.FC = () => {
       icon: <Folder className="w-5 h-5" />,
     },
     {
-      id: 'skills',
-      label: t('settings:tabs.skills'),
-      icon: <Sparkles className="w-5 h-5" />,
-    },
-    {
       id: 'shortcuts',
       label: t('settings:tabs.shortcuts'),
       icon: <Keyboard className="w-5 h-5" />,
@@ -94,8 +89,6 @@ const SettingsWindow: React.FC = () => {
         return <AgentSettings onNavigateToProvider={() => setActiveTab('provider')} />;
       case 'shortcuts':
         return <ShortcutsSettings />;
-      case 'skills':
-        return <SkillsSettings />;
       case 'about':
         return <AboutSettings />;
       default:
@@ -171,7 +164,7 @@ const SettingsWindow: React.FC = () => {
         </div>
 
         {/* 底部按钮 */}
-        {activeTab !== 'about' && activeTab !== 'skills' && activeTab !== 'provider' && (
+        {activeTab !== 'about' && activeTab !== 'provider' && (
           <div className="p-4 flex items-center justify-end gap-3">
             {hasChanges && (
               <span className="text-sm text-destructive mr-2">{t('common:unsavedChanges')}</span>
@@ -192,6 +185,7 @@ const SettingsWindow: React.FC = () => {
           </div>
         )}
       </div>
+      <ConfirmDialog />
     </div>
   );
 };

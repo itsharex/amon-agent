@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react';
 import i18n from '../../i18n';
 import { useSessionStore } from '../../store/sessionStore';
 import { useChatStore } from '../../store/chatStore';
+import { confirm } from '../../store/confirmStore';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
@@ -14,7 +15,7 @@ import { Input } from '../ui/input';
  * - 今年内: 显示月日 (如 3/15)
  * - 更早: 显示年月日 (如 2024/3/15)
  */
-function formatTime(timestamp: string, yesterdayLabel: string): string {
+function formatTime(timestamp: number, yesterdayLabel: string): string {
   const date = new Date(timestamp);
   const now = new Date();
 
@@ -37,7 +38,11 @@ function formatTime(timestamp: string, yesterdayLabel: string): string {
   }
 }
 
-const SessionList: React.FC = () => {
+interface SessionListProps {
+  onSelectSession?: () => void;
+}
+
+const SessionList: React.FC<SessionListProps> = ({ onSelectSession }) => {
   const { t } = useTranslation('sidebar');
   const { sessions, currentSessionId, setCurrentSessionId, deleteSession, renameSession } =
     useSessionStore();
@@ -46,11 +51,16 @@ const SessionList: React.FC = () => {
   const [editName, setEditName] = useState('');
 
   const handleSelectSession = async (sessionId: string) => {
-    if (sessionId === currentSessionId) return;
+    if (sessionId === currentSessionId) {
+      // Even if same session, trigger navigation back to chat view
+      onSelectSession?.();
+      return;
+    }
 
     // 先加载消息，再切换会话，避免闪烁
     await loadMessages(sessionId);
     setCurrentSessionId(sessionId);
+    onSelectSession?.();
   };
 
   const handleStartRename = (id: string, name: string) => {
@@ -67,7 +77,7 @@ const SessionList: React.FC = () => {
 
   const handleDelete = async (e: React.MouseEvent, id: string, name: string) => {
     e.stopPropagation();
-    const { confirmed } = await window.electronAPI.dialog.confirm({
+    const confirmed = await confirm({
       title: t('deleteSession'),
       message: t('confirmDeleteSession', { name }),
     });
@@ -121,9 +131,9 @@ const SessionList: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <span
                   className="block text-sm truncate"
-                  onDoubleClick={() => handleStartRename(session.id, session.name)}
+                  onDoubleClick={() => handleStartRename(session.id, session.title)}
                 >
-                  {session.name}
+                  {session.title}
                 </span>
                 <span className="block text-xs text-muted-foreground mt-0.5">
                   {formatTime(session.updatedAt, t('yesterday'))}
@@ -132,7 +142,7 @@ const SessionList: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={(e) => handleDelete(e, session.id, session.name)}
+                onClick={(e) => handleDelete(e, session.id, session.title)}
                 className="opacity-0 group-hover:opacity-100 h-7 w-7 text-muted-foreground hover:text-destructive flex-shrink-0"
                 title={t('deleteSession')}
               >
