@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../../store/chatStore';
 import { useSessionStore } from '../../store/sessionStore';
+import { getLatestAssistantUsageWithData, getUsageContextTokens } from '../../lib/usage';
 import { formatTokenCount } from '../../lib/utils';
 import type { AssistantMessage } from '../../types';
 import {
@@ -28,18 +29,11 @@ const ContextUsageIndicator: React.FC = () => {
   const contextWindow = agentState?.contextWindow;
   if (!contextWindow || !messages) return null;
 
-  // Find the latest assistant message with usage data
-  let lastAssistant: AssistantMessage | null = null;
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role === 'assistant') {
-      lastAssistant = messages[i] as AssistantMessage;
-      break;
-    }
-  }
+  const assistantMessages = messages.filter((message): message is AssistantMessage => message.role === 'assistant');
+  const latestUsage = getLatestAssistantUsageWithData(assistantMessages);
+  if (!latestUsage) return null;
 
-  if (!lastAssistant?.usage) return null;
-
-  const usedTokens = lastAssistant.usage.input + lastAssistant.usage.cacheRead;
+  const usedTokens = getUsageContextTokens(latestUsage);
   const percent = Math.min(Math.round((usedTokens / contextWindow) * 100), 100);
   const dashOffset = CIRCUMFERENCE * (1 - percent / 100);
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Usage } from '../../types';
+import { getUsageTotalInputTokens } from '../../lib/usage';
 import { formatTokenCount } from '../../lib/utils';
 
 export interface TokenUsageProps {
@@ -12,7 +13,7 @@ const TokenUsage: React.FC<TokenUsageProps> = ({ usage }) => {
   const { t } = useTranslation('message');
   const [expanded, setExpanded] = useState(false);
 
-  const totalInput = usage.input + usage.cacheRead + usage.cacheWrite;
+  const totalInput = getUsageTotalInputTokens(usage);
   const hasCache = usage.cacheRead > 0 || usage.cacheWrite > 0;
 
   return (

@@ -30,6 +30,7 @@ import { parseStreamingJson } from "../utils/json-parse";
 import { sanitizeSurrogates } from "../utils/sanitize-unicode";
 import { buildBaseOptions, clampReasoning } from "./simple-options";
 import { transformMessages } from "./transform-messages";
+import { mapOpenAICompletionsUsage } from "./usage";
 
 function normalizeMistralToolId(id: string): string {
 	let normalized = id.replace(/[^a-zA-Z0-9]/g, "");
@@ -106,18 +107,7 @@ export const streamOpenAICompletions: StreamFunction<"openai-completions", OpenA
 
 			for await (const chunk of openaiStream) {
 				if (chunk.usage) {
-					const cachedTokens = chunk.usage.prompt_tokens_details?.cached_tokens || 0;
-					const reasoningTokens = chunk.usage.completion_tokens_details?.reasoning_tokens || 0;
-					const input = (chunk.usage.prompt_tokens || 0) - cachedTokens;
-					const outputTokens = (chunk.usage.completion_tokens || 0) + reasoningTokens;
-					output.usage = {
-						input,
-						output: outputTokens,
-						cacheRead: cachedTokens,
-						cacheWrite: 0,
-						totalTokens: input + outputTokens + cachedTokens,
-						cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
-					};
+					output.usage = mapOpenAICompletionsUsage(chunk.usage);
 					calculateCost(model, output.usage);
 				}
 
