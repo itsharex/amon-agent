@@ -175,20 +175,20 @@ const MessageList = React.forwardRef<MessageListRef, MessageListProps>(({ onNear
         {groups.map((group, gi) => {
           if (group.type === 'user') {
             return (
-              <div key={`user-${group.message.timestamp}-${gi}`} className={`${maxWidthClass} mx-auto px-4 py-2.5`}>
+              <div key={`user-${group.message.timestamp}-${gi}`} className={`${maxWidthClass} w-full min-w-0 mx-auto px-4 py-2.5`}>
                 <MessageItem message={group.message} />
               </div>
             );
           }
           return (
-            <div key={`turn-${group.messages[0].timestamp}-${gi}`} className={`${maxWidthClass} mx-auto px-4 py-2.5`}>
+            <div key={`turn-${group.messages[0].timestamp}-${gi}`} className={`${maxWidthClass} w-full min-w-0 mx-auto px-4 py-2.5`}>
               <AssistantTurn messages={group.messages} isLastTurn={gi === groups.length - 1} />
             </div>
           );
         })}
 
         {/* Footer 内容 */}
-        <div className={`${maxWidthClass} mx-auto px-4 pb-6`}>
+        <div className={`${maxWidthClass} w-full min-w-0 mx-auto px-4 pb-6`}>
           {/* 错误提示 */}
           {error && (
             <div className="mt-3 p-4 bg-destructive/10 border border-destructive/30 rounded-xl relative">

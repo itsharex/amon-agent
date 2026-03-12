@@ -24,13 +24,13 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
   const previewText = content.slice(0, previewLength);
 
   return (
-    <div className="mb-3">
+    <div className="mb-3 w-full min-w-0 max-w-full">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-sm text-thinking-foreground hover:text-thinking transition-colors"
+        className="flex min-w-0 max-w-full items-center gap-2 text-sm text-thinking-foreground transition-colors hover:text-thinking"
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-        <span className="flex items-center gap-1.5">
+        <span className="flex min-w-0 items-center gap-1.5">
           <Lightbulb className="w-4 h-4" />
           {t('thinking')}
           {isStreaming && (
@@ -43,14 +43,14 @@ const ThinkingBlock: React.FC<ThinkingBlockProps> = ({ content, isStreaming, def
 
       {isExpanded && (
         <div className="mt-2 pl-6 border-l-2 border-thinking-border">
-          <div className="text-sm text-muted-foreground markdown-content thinking-content">
+          <div className="text-sm text-muted-foreground markdown-content thinking-content min-w-0 max-w-full break-words [overflow-wrap:anywhere]">
             <Streamdown plugins={{ code, math, cjk }}>{content}</Streamdown>
           </div>
         </div>
       )}
 
       {!isExpanded && content && (
-        <div className="mt-1 pl-6 text-xs text-muted-foreground truncate max-w-md">
+        <div className="mt-1 max-w-full truncate pl-6 text-xs text-muted-foreground">
           {previewText}...
         </div>
       )}

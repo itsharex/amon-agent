@@ -46,7 +46,13 @@ const ContentBlockRenderer: React.FC<ContentBlockRendererProps> = ({
       );
 
     case 'toolCall':
-      return <ToolCallBlock toolCall={block} sessionId={sessionId} />;
+      return (
+        <ToolCallBlock
+          key={`${block.id}-${Object.keys(block.arguments ?? {}).length > 0 ? 'ready' : 'pending'}`}
+          toolCall={block}
+          sessionId={sessionId}
+        />
+      );
 
     default:
       return null;

@@ -28,13 +28,13 @@ const ToolGroup: React.FC<ToolGroupProps> = ({ blocks, isStreaming, defaultColla
   if (blocks.length === 0) return null;
 
   return (
-    <div className="my-3 rounded-lg border border-border bg-muted/50 overflow-hidden">
+    <div className="my-3 w-full min-w-0 max-w-full overflow-hidden rounded-lg border border-border bg-muted/50">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-tool-foreground hover:text-tool hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
+        className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left text-sm text-tool-foreground transition-colors hover:bg-black/5 hover:text-tool dark:hover:bg-white/5"
       >
         <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-        <span className="flex items-center gap-1.5">
+        <span className="flex min-w-0 items-center gap-1.5">
           <Wrench className="w-4 h-4" />
           <span>{t('tool.toolUse')}</span>
           {isStreaming && (
@@ -51,10 +51,14 @@ const ToolGroup: React.FC<ToolGroupProps> = ({ blocks, isStreaming, defaultColla
       {isExpanded && (
         <div
           ref={containerRef}
-          className="p-2 space-y-2 border-t border-border max-h-96 overflow-y-auto"
+          className="max-h-96 min-w-0 space-y-2 overflow-y-auto border-t border-border p-2"
         >
           {blocks.map((block) => (
-            <ToolCallBlock key={`tool-${block.id}`} toolCall={block} sessionId={sessionId} />
+            <ToolCallBlock
+              key={`tool-${block.id}-${Object.keys(block.arguments ?? {}).length > 0 ? 'ready' : 'pending'}`}
+              toolCall={block}
+              sessionId={sessionId}
+            />
           ))}
         </div>
       )}

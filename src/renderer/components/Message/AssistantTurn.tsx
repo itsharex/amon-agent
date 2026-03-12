@@ -36,8 +36,8 @@ const AssistantTurn: React.FC<AssistantTurnProps> = ({ messages, isLastTurn }) =
   const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
 
   return (
-    <div className="flex flex-col items-start">
-      <div className="space-y-2 items-start">
+    <div className="flex w-full min-w-0 flex-col items-start">
+      <div className="w-full min-w-0 space-y-2">
         {messages.map((msg, i) => {
           const isLastInTurn = i === messages.length - 1;
           // Only the last message of the last (active) turn is non-historical
@@ -55,7 +55,7 @@ const AssistantTurn: React.FC<AssistantTurnProps> = ({ messages, isLastTurn }) =
         })}
 
         {/* Single footer for the entire turn */}
-        <div className="flex flex-col gap-1 mt-1 items-start pl-1">
+        <div className="mt-1 flex w-full min-w-0 flex-col gap-1 items-start pl-1">
           {showTokenUsage && turnUsage && <TokenUsage usage={turnUsage} />}
           <div className="text-[11px] text-muted-foreground">
             {formatTimestamp(lastMessage.timestamp, locale)}

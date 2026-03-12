@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ToolCall, ToolResultMessage } from '../../../types';
 import { useChatStore } from '../../../store/chatStore';
@@ -318,12 +318,6 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall, isNested = fals
   const argsAvailable = !!toolCall.arguments && Object.keys(toolCall.arguments).length > 0;
   const [isExpanded, setIsExpanded] = useState(isStandaloneTool && argsAvailable);
 
-  useEffect(() => {
-    if (isStandaloneTool && argsAvailable) {
-      setIsExpanded(true);
-    }
-  }, [isStandaloneTool, argsAvailable]);
-
   const icon = TOOL_ICONS[toolCall.name] || <Settings className="w-4 h-4" />;
   const displayNameKey = TOOL_DISPLAY_NAME_KEYS[toolCall.name];
   const displayName = displayNameKey ? t(displayNameKey) : toolCall.name;
@@ -362,7 +356,7 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall, isNested = fals
   };
 
   return (
-    <div className={`rounded-lg border overflow-hidden ${
+    <div className={`w-full min-w-0 max-w-full overflow-hidden rounded-lg border ${
       isError
         ? 'border-red-500/30 bg-red-500/5'
         : isNested
@@ -372,7 +366,7 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall, isNested = fals
       {/* 头部 - 可点击折叠 */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-muted-foreground"
+        className="flex w-full min-w-0 max-w-full items-center gap-2 px-3 py-2 text-left text-muted-foreground transition-colors hover:bg-black/5 dark:hover:bg-white/5"
       >
         {/* 折叠图标 */}
         <ChevronRight className={`w-3 h-3 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
@@ -383,14 +377,14 @@ const ToolCallBlock: React.FC<ToolCallBlockProps> = ({ toolCall, isNested = fals
         {/* 工具名称 + 文件路径（Write/Edit） */}
         <span className="font-medium text-sm shrink-0">{displayName}</span>
         {standaloneFilePath && (
-          <span className="text-xs opacity-70 truncate flex-1 font-mono">
+          <span className="min-w-0 flex-1 truncate font-mono text-xs opacity-70">
             {standaloneFilePath}
           </span>
         )}
 
         {/* 输入摘要 - Write/Edit 工具不显示（已在标题中） */}
         {inputSummary && !isStandaloneTool && (
-          <span className="text-xs opacity-70 truncate flex-1 font-mono">
+          <span className="min-w-0 flex-1 truncate font-mono text-xs opacity-70">
             {inputSummary}
           </span>
         )}
