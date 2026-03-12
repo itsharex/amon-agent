@@ -24,6 +24,8 @@ const ContentBlockRenderer: React.FC<ContentBlockRendererProps> = ({
   defaultCollapsed = false,
   sessionId,
 }) => {
+  const isActiveBlock = Boolean(isStreaming && isLastBlock);
+
   switch (block.type) {
     case 'text':
       return (
@@ -36,9 +38,10 @@ const ContentBlockRenderer: React.FC<ContentBlockRendererProps> = ({
     case 'thinking':
       return (
         <ThinkingBlock
+          key={isActiveBlock ? 'thinking-active' : 'thinking-complete'}
           content={block.thinking}
-          isStreaming={isStreaming}
-          defaultCollapsed={defaultCollapsed}
+          isStreaming={isActiveBlock}
+          defaultCollapsed={defaultCollapsed || !isActiveBlock}
         />
       );
 

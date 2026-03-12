@@ -9,7 +9,7 @@ import { cjk } from '@streamdown/cjk';
 export interface ThinkingBlockProps {
   content: string;
   isStreaming?: boolean;
-  /** Whether the block should be collapsed by default (for historical messages) */
+  /** Whether the block should be collapsed by default (for completed or historical thinking blocks) */
   defaultCollapsed?: boolean;
 }
 
