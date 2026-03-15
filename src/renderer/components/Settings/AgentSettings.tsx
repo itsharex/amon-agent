@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '../../store/settingsStore';
+import type { ApprovalMode } from '../../types';
 
 import ProviderIcon from '../Settings/ProviderIcon';
 
@@ -12,6 +13,8 @@ const THINKING_LEVELS = [
   { value: 'xhigh', label: 'X-High' },
 ] as const;
 
+const APPROVAL_MODES: ApprovalMode[] = ['ask', 'auto-edit', 'yolo'];
+
 interface AgentSettingsProps {
   onNavigateToProvider?: () => void;
 }
@@ -22,7 +25,7 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const { activeProviderId, thinkingLevel, maxTurns, providerConfigs } = formData.agent;
+  const { activeProviderId, thinkingLevel, maxTurns, providerConfigs, defaultApprovalMode } = formData.agent;
 
   const configuredProviders = (providerConfigs || [])
     .filter(c => c.apiKey?.trim());
@@ -61,6 +64,11 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
     if (!isNaN(num) && num > 0) {
       setAgentFormData({ maxTurns: num });
     }
+  };
+
+  const handleDefaultApprovalModeChange = (mode: ApprovalMode) => {
+    clearSaveError();
+    setAgentFormData({ defaultApprovalMode: mode });
   };
 
   const hasNoProviders = configuredProviders.length === 0;
@@ -169,6 +177,38 @@ const AgentSettings: React.FC<AgentSettingsProps> = ({ onNavigateToProvider }) =
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Default Approval Mode */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          {t('settings:agent.defaultApprovalMode')}
+        </label>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {APPROVAL_MODES.map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => handleDefaultApprovalModeChange(mode)}
+              className={`
+                rounded-lg border-2 px-3 py-3 text-left transition-all duration-150
+                ${defaultApprovalMode === mode
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-foreground hover:bg-accent'}
+              `}
+            >
+              <div className="text-sm font-medium">
+                {t(`settings:agent.approvalMode_${mode}`)}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {t(`settings:agent.approvalMode_${mode}_desc`)}
+              </div>
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {t('settings:agent.defaultApprovalModeHint')}
+        </p>
       </div>
 
       {/* Max Turns */}

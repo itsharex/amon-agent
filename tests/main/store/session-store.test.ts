@@ -8,6 +8,7 @@ function createSession(id: string, updatedAt: number) {
     id,
     title: `Session ${id}`,
     workspace: `/workspace/${id}`,
+    approvalMode: 'ask' as const,
     createdAt: updatedAt,
     updatedAt,
   };

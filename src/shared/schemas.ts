@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ApprovalModeSchema } from './permission-types';
 
 // ==================== Provider 配置 Schema ====================
 
@@ -22,6 +23,7 @@ export const AgentSettingsSchema = z.object({
   activeModelId: z.string().default('claude-sonnet-4-20250514'),
   maxTurns: z.number().default(50),
   thinkingLevel: z.enum(['off', 'low', 'medium', 'high', 'xhigh']).default('medium'),
+  defaultApprovalMode: ApprovalModeSchema.default('ask'),
   providerConfigs: z.array(ProviderConfigSchema).default([]),
   exaApiKey: z.string().default(''),
 });

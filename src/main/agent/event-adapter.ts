@@ -1,4 +1,5 @@
 import type { AgentEvent, AgentMessage } from '../../agent';
+import { isPermissionToolUpdate } from '@shared/permission-types';
 import type { SessionStore } from '../store/session-store';
 import type { PushService } from '../ipc/push';
 
@@ -52,6 +53,34 @@ export class EventAdapter {
         break;
 
       case 'tool_execution_update':
+        {
+          const permissionUpdate = getPermissionUpdateDetails(event.partialResult);
+          if (permissionUpdate) {
+
+            if (permissionUpdate.type === 'permission_request') {
+              this.pushService.pushPermissionRequested(permissionUpdate.request);
+              this.pushService.pushToolExecution(sessionId, event.toolCallId, {
+                toolName: event.toolName,
+                status: 'awaiting_approval',
+              });
+              break;
+            }
+
+            this.pushService.pushPermissionResolved({
+              requestId: permissionUpdate.requestId,
+              sessionId,
+              toolCallId: event.toolCallId,
+              decision: permissionUpdate.decision,
+            });
+            this.pushService.pushToolExecution(sessionId, event.toolCallId, {
+              toolName: event.toolName,
+              status: permissionUpdate.decision === 'approve' ? 'running' : 'error',
+              isError: permissionUpdate.decision === 'reject',
+            });
+            break;
+          }
+        }
+
         this.pushService.pushToolExecution(sessionId, event.toolCallId, {
           toolName: event.toolName,
           status: 'running',
@@ -76,4 +105,13 @@ export class EventAdapter {
       // agent_start, turn_start, turn_end are informational
     }
   }
+}
+
+function getPermissionUpdateDetails(value: unknown) {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const details = (value as { details?: unknown }).details;
+  return isPermissionToolUpdate(details) ? details : null;
 }

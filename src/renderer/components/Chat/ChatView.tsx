@@ -135,23 +135,25 @@ const ChatView: React.FC<ChatViewProps> = ({ sidebarCollapsed, onToggleSidebar }
           <h2 className="text-sm font-medium text-foreground truncate">
             {currentSession?.title || t('newSession')}
           </h2>
-          {/* 工作空间指示器 */}
-          <button
-            onClick={handleWorkspaceClick}
-            className={`no-drag flex items-center gap-1 text-xs transition-colors
-                       ${hasMessages
-                         ? 'text-muted-foreground'
-                         : 'text-muted-foreground hover:text-foreground'}`}
-            title={hasMessages ? t('workspace.cannotChangeAfterStart') : undefined}
-          >
-            <Folder className="h-3 w-3" />
-            <span className="truncate max-w-[200px]">{workspaceDisplay}</span>
-            {hasMessages ? (
-              <Lock className="h-3 w-3" />
-            ) : (
-              <ChevronDown className={`h-3 w-3 transition-transform ${showWorkspaceSelector ? 'rotate-180' : ''}`} />
-            )}
-          </button>
+          <div className="flex items-center gap-1">
+            {/* 工作空间指示器 */}
+            <button
+              onClick={handleWorkspaceClick}
+              className={`no-drag flex items-center gap-1 text-xs transition-colors
+                         ${hasMessages
+                           ? 'text-muted-foreground'
+                           : 'text-muted-foreground hover:text-foreground'}`}
+              title={hasMessages ? t('workspace.cannotChangeAfterStart') : undefined}
+            >
+              <Folder className="h-3 w-3" />
+              <span className="truncate max-w-[200px]">{workspaceDisplay}</span>
+              {hasMessages ? (
+                <Lock className="h-3 w-3" />
+              ) : (
+                <ChevronDown className={`h-3 w-3 transition-transform ${showWorkspaceSelector ? 'rotate-180' : ''}`} />
+              )}
+            </button>
+          </div>
           {/* 工作空间选择器 */}
           {showWorkspaceSelector && currentSessionId && (
             <WorkspaceSelector

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Session } from '../types';
+import type { ApprovalMode } from '../types';
 
 interface SessionState {
   sessions: Session[];
@@ -14,6 +15,7 @@ interface SessionState {
   deleteSession: (id: string) => Promise<void>;
   renameSession: (id: string, title: string) => Promise<void>;
   updateSessionWorkspace: (id: string, workspace: string) => Promise<void>;
+  setApprovalMode: (id: string, approvalMode: ApprovalMode) => Promise<void>;
   loadCurrentSession: () => Promise<Session | null>;
   getCurrentWorkspace: () => string | undefined;
 }
@@ -83,6 +85,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       await window.ipc.session.updateWorkspace(id, workspace);
     } catch (error) {
       console.error('Failed to update session workspace:', error);
+      throw error;
+    }
+  },
+
+  setApprovalMode: async (id, approvalMode) => {
+    try {
+      await window.ipc.agent.setApprovalMode(id, approvalMode);
+    } catch (error) {
+      console.error('Failed to update session approval mode:', error);
       throw error;
     }
   },

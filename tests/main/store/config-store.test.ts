@@ -74,8 +74,16 @@ describe('ConfigStore', () => {
 
     const store = new ConfigStore(settingsPath);
     const updated = await store.updateSettings({
-      agent: { maxTurns: 99 },
-      skills: { initialized: true },
+      agent: {
+        ...DEFAULT_SETTINGS.agent,
+        ...(await store.getSettings()).agent,
+        maxTurns: 99,
+      },
+      skills: {
+        ...DEFAULT_SETTINGS.skills,
+        ...(await store.getSettings()).skills,
+        initialized: true,
+      },
     });
 
     expect(updated.theme).toBe('dark');

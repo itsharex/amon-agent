@@ -1,5 +1,7 @@
 // ==================== 从 src/ai 直接 re-export 消息类型 ====================
 
+import type { ApprovalMode } from './permission-types';
+
 export type {
   TextContent,
   ThinkingContent,
@@ -39,6 +41,7 @@ export interface Session {
   id: string;
   title: string;
   workspace: string;
+  approvalMode: ApprovalMode;
   createdAt: number;
   updatedAt: number;
 }
@@ -58,7 +61,7 @@ export interface AgentRunState {
 
 export interface ToolExecutionState {
   toolName: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: 'pending' | 'awaiting_approval' | 'running' | 'completed' | 'error';
   partialResult?: string;
   isError?: boolean;
 }

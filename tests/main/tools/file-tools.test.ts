@@ -138,6 +138,7 @@ describe('editTool', () => {
         file_path: 'crlf.txt',
         old_string: 'second',
         new_string: 'updated',
+        replace_all: false,
       },
       createContext(),
     );
@@ -157,6 +158,7 @@ describe('editTool', () => {
         file_path: 'duplicate.txt',
         old_string: 'hello',
         new_string: 'bye',
+        replace_all: false,
       },
       createContext(),
     );

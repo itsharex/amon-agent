@@ -335,22 +335,23 @@ async function executeToolCalls(
 			}
 
 			const cwd = config.cwd ?? process.cwd();
-			result = await tool.execute(toolCall.id, parsed.data, {
-				cwd,
-				signal,
-				onUpdate: (partialResult) => {
+				result = await tool.execute(toolCall.id, parsed.data, {
+					cwd,
+					signal,
+					onUpdate: (partialResult) => {
 					stream.push({
 						type: "tool_execution_update",
 						toolCallId: toolCall.id,
 						toolName: toolCall.name,
 						args: toolCall.arguments,
 						partialResult,
-					});
-				},
-			});
-		} catch (e) {
-			result = {
-				content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }],
+						});
+					},
+				});
+				isError = (result.details as { isError?: unknown } | undefined)?.isError === true;
+			} catch (e) {
+				result = {
+					content: [{ type: "text", text: e instanceof Error ? e.message : String(e) }],
 				details: {},
 			};
 			isError = true;

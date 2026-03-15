@@ -17,6 +17,7 @@
     "receivingInput": "Receiving input...",
     "executing": "Executing...",
     "waiting": "Waiting...",
+    "awaitingApproval": "Awaiting approval...",
     "toolUse": "Tool Use",
     "toolCount_one": "{{count}} tool",
     "toolCount_other": "{{count}} tools"

@@ -10,6 +10,7 @@ function createSessionStoreWithSession(): SessionStore {
     id: 's1',
     title: 'Session 1',
     workspace: '/workspace',
+    approvalMode: 'ask',
     createdAt: 100,
     updatedAt: 100,
   });
@@ -139,6 +140,7 @@ describe('PushService', () => {
       id: 's1',
       title: 'Session 1',
       workspace: '/workspace',
+      approvalMode: 'ask' as const,
       createdAt: 100,
       updatedAt: 100,
     };

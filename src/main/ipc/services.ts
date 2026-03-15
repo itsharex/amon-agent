@@ -2,12 +2,14 @@
 import { ipcMain, BrowserWindow, dialog, shell, app } from 'electron';
 import type { Session, ImageAttachment, Skill, SkillInfo } from '@shared/types';
 import type { Settings } from '@shared/schemas';
+import type { ApprovalMode, PermissionDecision } from '@shared/permission-types';
 import type { AgentService } from '../agent/agent-service';
 import type { SessionStore } from '../store/session-store';
 import type { Persistence } from '../store/persistence';
 import type { ConfigStore } from '../store/config-store';
 import type { PushService } from './push';
 import type { SkillsStore } from '../skills';
+import type { ApprovalService } from '../permissions/approval-service';
 import { nanoid } from 'nanoid';
 import path from 'path';
 import os from 'os';
@@ -29,6 +31,7 @@ export interface IpcDependencies {
   configStore: ConfigStore;
   pushService: PushService;
   skillsStore: SkillsStore;
+  approvalService: ApprovalService;
   getMainWindow: () => BrowserWindow | null;
   getSettingsWindow: () => BrowserWindow | null;
   createSettingsWindow: (tab?: string) => void;
@@ -82,6 +85,7 @@ export function registerIpcHandlers(deps: IpcDependencies): void {
   registerAgentHandlers(deps);
   registerSessionHandlers(deps);
   registerSettingsHandlers(deps);
+  registerPermissionHandlers(deps);
   registerSystemHandlers(deps);
   registerWorkspaceHandlers(deps);
   registerDialogHandlers();
@@ -102,6 +106,13 @@ function registerAgentHandlers(deps: IpcDependencies): void {
   handle('agent.interrupt', async (sessionId: unknown) => {
     deps.agentService.abort(sessionId as string);
   });
+
+  handle('agent.setApprovalMode', async (sessionId: unknown, approvalMode: unknown) => {
+    deps.sessionStore.setSessionApprovalMode(sessionId as string, approvalMode as ApprovalMode);
+    await deps.persistence.appendMetaUpdate(sessionId as string, {
+      approvalMode: approvalMode as ApprovalMode,
+    });
+  });
 }
 
 // ==================== Session Handlers ====================
@@ -113,8 +124,8 @@ function registerSessionHandlers(deps: IpcDependencies): void {
 
   handle('session.create', async (workspace?: unknown) => {
     let ws = workspace as string | undefined;
+    const settings = await deps.configStore.getSettings();
     if (!ws) {
-      const settings = await deps.configStore.getSettings();
       const defaultWs = settings.workspaces.find(w => w.isDefault);
       ws = defaultWs?.path ?? path.join(os.homedir(), '.amon', 'workspace');
     }
@@ -122,6 +133,7 @@ function registerSessionHandlers(deps: IpcDependencies): void {
       id: nanoid(),
       title: 'New Session',
       workspace: ws,
+      approvalMode: settings.agent.defaultApprovalMode,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -162,6 +174,23 @@ function registerSettingsHandlers(deps: IpcDependencies): void {
     const result = await deps.configStore.updateSettings(updates as Partial<Settings>);
     deps.pushService.pushSettingsChanged();
     return { success: true, data: result };
+  });
+}
+
+// ==================== Permission Handlers ====================
+
+function registerPermissionHandlers(deps: IpcDependencies): void {
+  handle('permission.respond', async (requestId: unknown, decision: unknown) => {
+    const request = deps.approvalService.respond(
+      requestId as string,
+      decision as PermissionDecision,
+    );
+
+    if (!request) {
+      return { success: false };
+    }
+
+    return { success: true };
   });
 }
 
@@ -301,10 +330,11 @@ function registerSkillsHandlers(deps: IpcDependencies): void {
 
 export function removeIpcHandlers(): void {
   const channels = [
-    'agent.sendMessage', 'agent.interrupt',
+    'agent.sendMessage', 'agent.interrupt', 'agent.setApprovalMode',
     'session.list', 'session.create', 'session.delete', 'session.rename',
     'session.getMessages', 'session.updateWorkspace',
     'settings.get', 'settings.set',
+    'permission.respond',
     'system.openSettings', 'system.closeSettings', 'system.openConfigDir',
     'system.openPath', 'system.openExternal', 'system.getVersion',
     'workspace.listFiles', 'workspace.validatePaths',

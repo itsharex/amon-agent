@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import type { Session, SessionState } from '@shared/types';
+import type { ApprovalMode } from '@shared/permission-types';
 import type { Message } from '../../ai/types';
 import { STREAM_THROTTLE_MS } from '@shared/constants';
 
@@ -71,6 +72,14 @@ export class SessionStore extends EventEmitter {
     const session = this.sessions.get(sessionId);
     if (!session) return;
     session.workspace = workspace;
+    session.updatedAt = Date.now();
+    this.emit('session:updated', session);
+  }
+
+  setSessionApprovalMode(sessionId: string, approvalMode: ApprovalMode): void {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+    session.approvalMode = approvalMode;
     session.updatedAt = Date.now();
     this.emit('session:updated', session);
   }

@@ -9,6 +9,12 @@ export type {
   ToolExecutionState,
   FileInfo,
 } from '../../shared/types';
+export type {
+  ApprovalMode,
+  PermissionDecision,
+  PermissionRequest,
+  PermissionResolved,
+} from '../../shared/permission-types';
 
 // 从 ai 类型重新导出（经由 shared/types）
 export type {
@@ -54,6 +60,7 @@ export interface IpcAPI {
   workspace: IpcProxy;
   dialog: IpcProxy;
   skills: IpcProxy;
+  permission: IpcProxy;
 }
 
 export interface PushAPI {

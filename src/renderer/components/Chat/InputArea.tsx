@@ -6,6 +6,8 @@ import { useSettingsStore } from '../../store/settingsStore';
 import { Square, ArrowUp, Paperclip, X } from 'lucide-react';
 import { ImageAttachment, ImageMimeType } from '../../types';
 import { useFileMention, FileMentionPopover, InputHighlight } from './FileMention';
+import { ApprovalModeSelector } from './ApprovalModeSelector';
+import { PermissionRequestBanner } from './PermissionRequestBanner';
 
 const MAX_IMAGES = 10;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -26,9 +28,12 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { sendMessage, interruptMessage, isSessionLoading } = useChatStore();
-  const { currentSessionId } = useSessionStore();
+  const { currentSessionId, sessions } = useSessionStore();
   const { formData } = useSettingsStore();
   const maxWidthClass = formData.chatWidth === 'wide' ? 'max-w-5xl' : 'max-w-3xl';
+  const currentSession = currentSessionId
+    ? sessions.find((session) => session.id === currentSessionId) ?? null
+    : null;
 
   // 当前会话是否正在加载
   const isLoading = isSessionLoading(currentSessionId);
@@ -223,6 +228,9 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
         <div className="flex justify-end pb-1.5">
           <ContextUsageIndicator />
         </div>
+        {currentSessionId && (
+          <PermissionRequestBanner sessionId={currentSessionId} />
+        )}
         {/* 输入框容器 */}
         <div
           ref={containerRef}
@@ -339,6 +347,12 @@ const InputArea: React.FC<InputAreaProps> = ({ onMessageSent }) => {
                 </button>
 
                 <ProviderSelector />
+                {currentSession && (
+                  <ApprovalModeSelector
+                    sessionId={currentSession.id}
+                    approvalMode={currentSession.approvalMode}
+                  />
+                )}
               </div>
 
               {/* 右侧：发送/停止按钮 */}

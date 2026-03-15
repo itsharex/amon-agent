@@ -14,6 +14,7 @@ const ipc = {
   agent: {
     sendMessage: (...args: unknown[]) => invoke('agent.sendMessage', ...args),
     interrupt: (...args: unknown[]) => invoke('agent.interrupt', ...args),
+    setApprovalMode: (...args: unknown[]) => invoke('agent.setApprovalMode', ...args),
   },
   session: {
     list: () => invoke('session.list'),
@@ -50,6 +51,9 @@ const ipc = {
     uninstall: (...args: unknown[]) => invoke('skills.uninstall', ...args),
     toggleDisable: (...args: unknown[]) => invoke('skills.toggleDisable', ...args),
     openFolder: (...args: unknown[]) => invoke('skills.openFolder', ...args),
+  },
+  permission: {
+    respond: (...args: unknown[]) => invoke('permission.respond', ...args),
   },
 };
 

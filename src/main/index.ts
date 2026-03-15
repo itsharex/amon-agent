@@ -15,6 +15,7 @@ import { PushService, bridgeSessionStoreToPush } from './ipc/push';
 import { SkillsStore } from './skills';
 import { registerIpcHandlers, removeIpcHandlers } from './ipc/services';
 import { handleBeforeQuit, handleWindowAllClosed, shouldHideMainWindowOnClose } from './lifecycle';
+import { ApprovalService } from './permissions/approval-service';
 import type { Shortcuts } from '@shared/schemas';
 import type { Session } from '@shared/types';
 
@@ -44,6 +45,7 @@ const skillsStore = new SkillsStore(configStore);
 const toolRegistry = createDefaultToolRegistry(configStore);
 const pushService = new PushService();
 const eventAdapter = new EventAdapter(sessionStore, pushService);
+const approvalService = new ApprovalService();
 
 // Bridge SessionStore events → PushService (before any window is created)
 bridgeSessionStoreToPush(sessionStore, pushService);
@@ -249,10 +251,14 @@ async function createAppMenu(shortcuts?: Shortcuts): Promise<void> {
           label: mainI18n.t('newSession'),
           accelerator: shortcutConfig.newSession,
           click: async () => {
+            const settings = await configStore.getSettings();
+            const defaultWorkspace = settings.workspaces.find((item) => item.isDefault)?.path
+              ?? DEFAULT_WORKSPACE;
             const session: Session = {
               id: nanoid(),
               title: 'New Session',
-              workspace: DEFAULT_WORKSPACE,
+              workspace: defaultWorkspace,
+              approvalMode: settings.agent.defaultApprovalMode,
               createdAt: Date.now(),
               updatedAt: Date.now(),
             };
@@ -370,6 +376,7 @@ app.on('ready', async () => {
     skillsStore,
     eventAdapter,
     pushService,
+    approvalService,
     dataDir: DATA_DIR,
     defaultWorkspace: DEFAULT_WORKSPACE,
   });
@@ -382,6 +389,7 @@ app.on('ready', async () => {
     configStore,
     pushService,
     skillsStore,
+    approvalService,
     getMainWindow: () => mainWindow,
     getSettingsWindow: () => settingsWindow,
     createSettingsWindow: (tab?: string) => openSettingsWindow(tab),
@@ -425,6 +433,7 @@ app.on('ready', async () => {
         id: nanoid(),
         title: 'New Session',
         workspace: cliWorkspace,
+        approvalMode: savedSettings.agent.defaultApprovalMode,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

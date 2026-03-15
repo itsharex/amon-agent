@@ -20,13 +20,15 @@ import { createAssistantMessage, createToolResultMessage, createUserMessage } fr
 let tempDir: string;
 
 function createSession(overrides: Partial<Session> = {}): Session {
+  const { approvalMode = 'ask', ...rest } = overrides;
   return {
     id: 'session-1',
     title: 'Session 1',
     workspace: '/workspace/a',
+    approvalMode,
     createdAt: 100,
     updatedAt: 100,
-    ...overrides,
+    ...rest,
   };
 }
 
@@ -62,6 +64,7 @@ describe('Persistence', () => {
       id: 'session-1',
       title: 'Renamed',
       workspace: '/workspace/b',
+      approvalMode: 'ask',
       createdAt: 100,
       updatedAt: 130,
     });
@@ -104,6 +107,7 @@ describe('Persistence', () => {
         id: sessionId,
         title: 'Broken',
         workspace: '/workspace',
+        approvalMode: 'ask',
         createdAt: 100,
         ts: 100,
       }),
@@ -135,6 +139,7 @@ describe('Persistence', () => {
           id: 'a',
           title: 'A',
           workspace: '/a',
+          approvalMode: 'ask',
           createdAt: 10,
           ts: 10,
         }),
@@ -151,6 +156,7 @@ describe('Persistence', () => {
           id: 'b',
           title: 'B',
           workspace: '/b',
+          approvalMode: 'ask',
           createdAt: 20,
           ts: 20,
         }),
@@ -166,6 +172,7 @@ describe('Persistence', () => {
       id: 'a',
       title: 'A2',
       workspace: '/a',
+      approvalMode: 'ask',
       createdAt: 10,
       updatedAt: 40,
     });

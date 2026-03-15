@@ -18,9 +18,12 @@ import type { EventAdapter } from './event-adapter';
 import type { PushService } from '../ipc/push';
 import type { ProviderConfig } from '@shared/schemas';
 import type { ImageAttachment } from '@shared/types';
+import type { ApprovalMode } from '@shared/permission-types';
 import { buildSystemPrompt } from './system-prompt';
 import { loadGlobalUserFiles, loadProjectAgentsFile } from '../workspace';
 import { formatSkillsForPrompt } from '../skills';
+import { ApprovalService } from '../permissions/approval-service';
+import { PermissionedToolExecutor } from '../permissions/tool-executor';
 
 // ==================== Types ====================
 
@@ -32,6 +35,7 @@ interface AgentServiceDeps {
   skillsStore: SkillsStore;
   eventAdapter: EventAdapter;
   pushService: PushService;
+  approvalService: ApprovalService;
   dataDir: string;
   defaultWorkspace: string;
 }
@@ -62,16 +66,32 @@ function resolveModel(config: ProviderConfig): Model<any> {
 
 // ==================== Tool Wrapping ====================
 
-function wrapTool(tool: Tool<any>): AgentTool {
+function wrapTool(
+  tool: Tool<any>,
+  options: {
+    sessionId: string;
+    defaultApprovalMode: ApprovalMode;
+    toolExecutor: PermissionedToolExecutor;
+  },
+): AgentTool {
   return {
     name: tool.name,
     description: tool.description,
     label: tool.name,
     inputSchema: tool.inputSchema,
     execute: async (toolCallId, input, ctx) => {
-      const result = await tool.execute(input, {
+      const result = await options.toolExecutor.execute(tool, input, {
+        sessionId: options.sessionId,
+        toolCallId,
+        mode: options.defaultApprovalMode,
         cwd: ctx.cwd,
         signal: ctx.signal ?? new AbortController().signal,
+        onPermissionUpdate: (update) => {
+          ctx.onUpdate?.({
+            content: [],
+            details: update,
+          });
+        },
       });
       return {
         content: [{ type: 'text', text: result.output }],
@@ -85,8 +105,14 @@ function wrapTool(tool: Tool<any>): AgentTool {
 
 export class AgentService {
   private agents = new Map<string, Agent>();
+  private readonly toolExecutor: PermissionedToolExecutor;
 
-  constructor(private deps: AgentServiceDeps) {}
+  constructor(private deps: AgentServiceDeps) {
+    this.toolExecutor = new PermissionedToolExecutor(
+      deps.sessionStore,
+      deps.approvalService,
+    );
+  }
 
   async sendMessage(
     sessionId: string,
@@ -155,7 +181,11 @@ export class AgentService {
     agent.setThinkingLevel(
       agentSettings.thinkingLevel === 'off' ? 'off' : agentSettings.thinkingLevel,
     );
-    agent.setTools(toolRegistry.getAll().map(wrapTool));
+    agent.setTools(toolRegistry.getAll().map((tool) => wrapTool(tool, {
+      sessionId,
+      defaultApprovalMode: session.approvalMode ?? agentSettings.defaultApprovalMode,
+      toolExecutor: this.toolExecutor,
+    })));
     agent.getApiKey = () => providerConfig.apiKey || undefined;
     agent.sessionId = sessionId;
     agent.cwd = session.workspace;
@@ -205,6 +235,7 @@ export class AgentService {
   }
 
   abort(sessionId: string): void {
+    this.deps.approvalService.rejectAllForSession(sessionId);
     this.agents.get(sessionId)?.abort();
   }
 

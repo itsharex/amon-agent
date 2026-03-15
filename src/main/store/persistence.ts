@@ -17,6 +17,7 @@ interface SessionMetaRecord extends BaseRecord {
   id: string;
   title: string;
   workspace: string;
+  approvalMode: Session['approvalMode'];
   createdAt: number;
 }
 
@@ -27,7 +28,7 @@ interface MessageRecord extends BaseRecord {
 
 interface MetaUpdateRecord extends BaseRecord {
   type: 'meta_update';
-  updates: Partial<Pick<Session, 'title' | 'workspace'>>;
+  updates: Partial<Pick<Session, 'title' | 'workspace' | 'approvalMode'>>;
 }
 
 type SessionRecord = SessionMetaRecord | MessageRecord | MetaUpdateRecord;
@@ -56,6 +57,7 @@ export class Persistence {
       id: session.id,
       title: session.title,
       workspace: session.workspace,
+      approvalMode: session.approvalMode,
       createdAt: session.createdAt,
       ts: session.createdAt,
     };
@@ -91,7 +93,7 @@ export class Persistence {
    */
   async appendMetaUpdate(
     sessionId: string,
-    updates: Partial<Pick<Session, 'title' | 'workspace'>>,
+    updates: Partial<Pick<Session, 'title' | 'workspace' | 'approvalMode'>>,
   ): Promise<void> {
     const record: MetaUpdateRecord = {
       type: 'meta_update',
@@ -181,6 +183,7 @@ export class Persistence {
               id: record.id,
               title: record.title,
               workspace: record.workspace,
+              approvalMode: record.approvalMode ?? 'ask',
               createdAt: record.createdAt,
               updatedAt: record.ts,
             };
@@ -205,6 +208,9 @@ export class Persistence {
               }
               if (record.updates.workspace !== undefined) {
                 session.workspace = record.updates.workspace;
+              }
+              if (record.updates.approvalMode !== undefined) {
+                session.approvalMode = record.updates.approvalMode;
               }
               session.updatedAt = record.ts;
             }
@@ -255,6 +261,7 @@ export class Persistence {
           id: firstRecord.id,
           title: firstRecord.title,
           workspace: firstRecord.workspace,
+          approvalMode: firstRecord.approvalMode ?? 'ask',
           createdAt: firstRecord.createdAt,
           updatedAt: firstRecord.ts,
         };
@@ -269,6 +276,9 @@ export class Persistence {
               }
               if (record.updates.workspace !== undefined) {
                 session.workspace = record.updates.workspace;
+              }
+              if (record.updates.approvalMode !== undefined) {
+                session.approvalMode = record.updates.approvalMode;
               }
             }
             if (record.ts > session.updatedAt) {
